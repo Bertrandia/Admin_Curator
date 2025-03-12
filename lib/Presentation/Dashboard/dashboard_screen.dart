@@ -2,33 +2,42 @@ import 'package:admin_curator/Constants/app_colors.dart';
 import 'package:admin_curator/Models/task_model.dart';
 import 'package:admin_curator/Presentation/Dashboard/Widgets/data_table.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+import '../../Core/Notifiers/task_notifier.dart';
+import '../../Providers/providers.dart' hide taskProvider;
+//
+// class DashboardScreen extends StatefulWidget {
+//   const DashboardScreen({super.key});
+//
+//   @override
+//   State<DashboardScreen> createState() => _DashboardScreenState();
+// }
 
-  @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
-}
-
-class _DashboardScreenState extends State<DashboardScreen> {
+class DashboardScreen extends ConsumerWidget {
   String selectedChip = 'Pending';
-  List<Task> _taskList = [];
+
+  // void _filterTasks() {
+  //   setState(() {
+  //     _taskList =
+  //         taskList.where((task) => task.status == selectedChip).toList();
+  //   });
+  // }
 
   @override
-  void initState() {
-    super.initState();
-    _filterTasks();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final taskList = ref.watch(taskProvider);
+    final int pendingTasks =
+        taskList.where((task) => task.curatorTaskStatus == 'Pending').length;
+    final int completedTasks =
+        taskList.where((task) => task.curatorTaskStatus == 'Completed').length;
 
-  void _filterTasks() {
-    setState(() {
-      _taskList =
-          taskList.where((task) => task.status == selectedChip).toList();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+    final int totalTasks = taskList.length;
+    final selectedChip = ref.watch(selectedChipProvider);
+    final filteredTasks =
+        taskList
+            .where((task) => task.curatorTaskStatus == selectedChip)
+            .toList();
     return Scaffold(
       backgroundColor: AppColors.white,
       body: ListView(
@@ -56,35 +65,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 _buildStatsCard(
                   title: 'Pending Tasks',
-                  count:
-                      taskList.where((task) => task.status == 'Pending').length,
+                  count: pendingTasks,
                   icon: Icons.pending_actions,
-                  color: const Color(0xFFBF4D28),
+                  color: AppColors.primary,
                 ),
                 const SizedBox(width: 16),
                 _buildStatsCard(
                   title: 'Completed Tasks',
-                  count:
-                      taskList
-                          .where((task) => task.status == 'Completed')
-                          .length,
+                  count: completedTasks,
                   icon: Icons.task_alt,
-                  color: const Color(0xFF4CAF50),
+                  color: AppColors.primary,
                 ),
+
                 const SizedBox(width: 16),
                 _buildStatsCard(
                   title: 'Verification Pending',
                   count:
-                      taskList.where((task) => task.status == 'On Hold').length,
+                      taskList
+                          .where((task) => task.curatorTaskStatus == 'On Hold')
+                          .length,
                   icon: Icons.verified_user,
-                  color: const Color(0xFFF2A65A),
+                  color: AppColors.primary,
                 ),
                 const SizedBox(width: 16),
                 _buildStatsCard(
                   title: 'Total Tasks',
-                  count: taskList.length,
+                  count: totalTasks,
                   icon: Icons.list_alt,
-                  color: const Color(0xFF673AB7),
+                  color: AppColors.primary,
                 ),
               ],
             ),
@@ -144,10 +152,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     onSelected: (bool isSelected) {
                       if (isSelected) {
-                        setState(() {
-                          selectedChip = filter;
-                          _filterTasks();
-                        });
+                        ref.read(selectedChipProvider.notifier).state = filter;
                       }
                     },
                   );
@@ -196,7 +201,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     showCheckboxColumn: false,
                     header: null, // No header, we have our own section title
                     columns: _createColumns(),
-                    source: TaskDataSource(_taskList, context),
+                    source: TaskDataSource(filteredTasks, context),
                     dataRowMinHeight: 64,
                     dataRowMaxHeight: 64,
                   ),
@@ -288,7 +293,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         label: Container(
           width: 180,
           child: Text(
-            'Description',
+            'Status',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: const Color(0xFFBF4D28),
@@ -300,7 +305,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         label: Container(
           width: 90,
           child: Text(
-            'Status',
+            'LM',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: const Color(0xFFBF4D28),
@@ -312,7 +317,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         label: Container(
           width: 100,
           child: Text(
-            'Due Date',
+            'Assign Date',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: const Color(0xFFBF4D28),
@@ -324,7 +329,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         label: Container(
           width: 130,
           child: Text(
-            'Assigned To',
+            'Due Date',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: const Color(0xFFBF4D28),
@@ -347,3 +352,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ];
   }
 }
+
+// class TaskDataTable extends StatelessWidget {
+//   final List<Task> tasks;
+//
+//   const TaskDataTable({required this.tasks, Key? key}) : super(key: key);
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return PaginatedDataTable(
+//       columns: _createColumns(),
+//       source: TaskDataSource(tasks, context),
+//       rowsPerPage: 5,
+//     );
+//   }
+//
+//   List<DataColumn> _createColumns() {
+//     return [
+//       DataColumn(label: Text('Title')),
+//       DataColumn(label: Text('Description')),
+//       DataColumn(label: Text('Status')),
+//       DataColumn(label: Text('Due Date')),
+//       DataColumn(label: Text('Assigned To')),
+//       DataColumn(label: Text('Assigned To')),
+//     ];
+//   }
+// }

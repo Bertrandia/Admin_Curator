@@ -43,7 +43,7 @@ class MainLayout extends ConsumerWidget {
               children: [
                 const SizedBox(height: 10),
                 const Align(
-                  alignment: Alignment.topLeft,
+                  alignment: Alignment.center,
                   child: Padding(
                     padding: EdgeInsets.all(8.0),
                     child: LogoWidget(height: 30),
@@ -103,25 +103,25 @@ class MainLayout extends ConsumerWidget {
                       ),
                       _buildNavItem(
                         context,
-                        label: "Profiles",
+                        label: "Verification",
                         route: '/curatorProfiles',
                         icon: Icons.task,
                         authNotifier: authNotifier,
                       ),
                       _buildNavItem(
                         context,
-                        label: "Tasks",
+                        label: "Curators",
                         route: '/tasks',
                         icon: Icons.analytics,
                         authNotifier: authNotifier,
                       ),
-                      _buildNavItem(
-                        context,
-                        label: "About",
-                        route: '/about',
-                        icon: Icons.analytics,
-                        authNotifier: authNotifier,
-                      ),
+                      // _buildNavItem(
+                      //   context,
+                      //   label: "About",
+                      //   route: '/about',
+                      //   icon: Icons.analytics,
+                      //   authNotifier: authNotifier,
+                      // ),
                     ],
                   ),
                 ),

@@ -6,7 +6,7 @@ class CuratorModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool status;
-  final bool isRejected;
+
   final bool isProfileCompleted;
   final bool isVerified;
   final ProfileData? profile;
@@ -19,7 +19,6 @@ class CuratorModel {
     required this.createdAt,
     required this.updatedAt,
     required this.status,
-    required this.isRejected,
     required this.isVerified,
     this.profile,
     required this.isProfileCompleted,
@@ -35,7 +34,7 @@ class CuratorModel {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'status': status,
-      'isRejected': isRejected,
+
       'isVerified': isVerified,
       'profile': profile?.toMap(), // Ensure proper serialization
       'isProfileCompleted': isProfileCompleted,
@@ -53,7 +52,6 @@ class CuratorModel {
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       status: json['status'] as bool,
       isVerified: json['isVerified'] as bool,
-      isRejected: json['isRejected'] as bool,
       isProfileCompleted: json['isProfileCompleted'] as bool,
       profile:
           json['profile'] != null ? ProfileData.fromMap(json['profile']) : null,
@@ -82,7 +80,7 @@ class CuratorModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       status: status ?? this.status,
-      isRejected: isRejected ?? this.isRejected,
+
       isVerified: isVerified ?? this.isVerified,
       isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
       profile: profile ?? this.profile,

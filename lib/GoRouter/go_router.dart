@@ -1,13 +1,15 @@
 import 'package:admin_curator/Presentation/About/about.dart';
 import 'package:admin_curator/Presentation/Auth/Login/auth_signin.dart';
-import 'package:admin_curator/Presentation/CuratorProfiles/curator_profiles.dart';
 import 'package:admin_curator/Presentation/Dashboard/dashboard_screen.dart';
 import 'package:admin_curator/Presentation/LoadingScreen/loading_screen.dart';
 import 'package:admin_curator/Presentation/MainLayout/main_layout.dart';
+import 'package:admin_curator/Presentation/TasksScreen/task_details_assign.dart';
 import 'package:admin_curator/Presentation/TasksScreen/tasks_screen.dart';
 import 'package:admin_curator/Providers/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../Presentation/CuratorProfiles/curator_profiles.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authNotifierProvider);
@@ -29,7 +31,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/dashboard',
-            builder: (context, state) => const DashboardScreen(),
+            builder: (context, state) => DashboardScreen(),
           ),
           GoRoute(
             path: '/curatorProfiles',
@@ -41,7 +43,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/tasks',
-            builder: (context, state) => const TasksScreen(),
+            builder: (context, state) => const CuratorProfilesList(),
+          ),
+          GoRoute(
+            path: '/tasks_details/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id'];
+              return TaskAdminPage(id ?? '');
+            },
           ),
         ],
       ),
