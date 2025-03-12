@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Task {
   String id;
   String title;
@@ -5,7 +7,7 @@ class Task {
   String status; // e.g., "Pending", "Completed", "On Hold"
   DateTime dueDate;
   String assignedTo;
-  int priority; // 1 = High, 2 = Medium, 3 = Low
+  String priority; // 1 = High, 2 = Medium, 3 = Low
   DateTime createdAt;
 
   Task({
@@ -36,14 +38,20 @@ class Task {
   // Convert JSON to Task object (for fetching from Firestore or API)
   factory Task.fromJson(Map<String, dynamic> json) {
     return Task(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      status: json['status'],
-      dueDate: DateTime.parse(json['dueDate']),
-      assignedTo: json['assignedTo'],
-      priority: json['priority'],
-      createdAt: DateTime.parse(json['createdAt']),
+      id: json['taskID'] ?? '',
+      title: json['taskSubject'] ?? 'Subject',
+      description: json['taskDescription'] ?? 'Descirption',
+      status: json['curatorTaskStatus'] ?? 'status',
+      dueDate:
+          json['taskDueDate'] is Timestamp
+              ? (json['taskDueDate'] as Timestamp).toDate()
+              : DateTime.now(),
+      assignedTo: json['taskAssignedToCurator'] ?? 'defefef',
+      priority: json['priority'] ?? 'Low',
+      createdAt:
+          json['createdAt'] is Timestamp
+              ? (json['createdAt'] as Timestamp).toDate()
+              : DateTime.now(),
     );
   }
 }
@@ -56,7 +64,7 @@ List<Task> taskList = [
     status: 'Pending',
     dueDate: DateTime.now().add(Duration(days: 3)), // 3 days from now
     assignedTo: 'Alice Johnson',
-    priority: 1, // High Priority
+    priority: 'Medium', // High Priority
     createdAt: DateTime.now(),
   ),
   Task(
@@ -66,7 +74,7 @@ List<Task> taskList = [
     status: 'Completed',
     dueDate: DateTime.now().subtract(Duration(days: 1)), // 1 day ago
     assignedTo: 'Bob Smith',
-    priority: 2, // Medium Priority
+    priority: 'Medium', // Medium Priority
     createdAt: DateTime.now().subtract(Duration(days: 7)),
   ),
   Task(
@@ -76,7 +84,7 @@ List<Task> taskList = [
     status: 'On Hold',
     dueDate: DateTime.now().add(Duration(days: 5)), // 5 days from now
     assignedTo: 'Charlie Adams',
-    priority: 3, // Low Priority
+    priority: 'Medium', // Low Priority
     createdAt: DateTime.now().subtract(Duration(days: 2)),
   ),
   Task(
@@ -86,170 +94,187 @@ List<Task> taskList = [
     status: 'Pending',
     dueDate: DateTime.now().add(Duration(days: 2)), // 2 days from now
     assignedTo: 'David Williams',
-    priority: 1, // High Priority
+    priority: 'Medium', // High Priority
     createdAt: DateTime.now().subtract(Duration(days: 3)),
   ),
-  Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),Task(
-    id: 'task_005',
-    title: 'Add Graphs to Dashboard',
-    description: 'Implement pie charts and bar graphs using fl_chart.',
-    status: 'Completed',
-    dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
-    assignedTo: 'Eve Carter',
-    priority: 2, // Medium Priority
-    createdAt: DateTime.now().subtract(Duration(days: 10)),
-  ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
+  // Task(
+  //   id: 'task_005',
+  //   title: 'Add Graphs to Dashboard',
+  //   description: 'Implement pie charts and bar graphs using fl_chart.',
+  //   status: 'Completed',
+  //   dueDate: DateTime.now().subtract(Duration(days: 4)), // 4 days ago
+  //   assignedTo: 'Eve Carter',
+  //   priority: 2, // Medium Priority
+  //   createdAt: DateTime.now().subtract(Duration(days: 10)),
+  // ),
 ];

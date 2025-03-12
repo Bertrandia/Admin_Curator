@@ -1,1 +1,30 @@
-{"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"procure-to-pay-9604a","configurations":{"web":"1:632406467525:web:16a19852fc894a3ed0e1ac"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "procure-to-pay-9604a",
+          "configurations": {
+            "web": "1:632406467525:web:16a19852fc894a3ed0e1ac"
+          }
+        }
+      }
+    }
+  },
+  "hosting":
+    {
+      "public": "build/web",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+
+}

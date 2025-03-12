@@ -73,6 +73,7 @@ class _WebLoginFormState extends ConsumerState<WebLoginForm> {
                     header: "Enter your password",
                     hintText: "Enter your password",
                     textEditingController: password,
+                    isPassword: true,
                     keyboardType: TextInputType.visiblePassword,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
