@@ -1,3 +1,4 @@
+import 'package:admin_curator/Constants/app_colors.dart';
 import 'package:admin_curator/Models/profile.dart';
 import 'package:admin_curator/Presentation/CuratorProfiles/Widgets/profile_details.dart';
 import 'package:admin_curator/Providers/providers.dart';
@@ -48,19 +49,19 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
                   'Total Profiles',
                   profileState.profile.length,
                   Icons.people,
-                  Colors.blue,
+                  AppColors.primary,
                 ),
                 _buildStatsCard(
                   'Pending Verifications',
                   curators.where((p) => p.isVerified == false).length,
                   Icons.verified_user,
-                  Colors.orange,
+                  AppColors.primary,
                 ),
                 _buildStatsCard(
                   'Approved Profiles',
                   curators.where((p) => p.isVerified == true).length,
                   Icons.check_circle,
-                  Colors.green,
+                  AppColors.primary,
                 ),
               ],
             ),
@@ -102,9 +103,12 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
     return Row(
       children: [
         ChoiceChip(
-          label: const Text('Unverified'),
+          label: Text(
+            'Unverified',
+            style: TextStyle(color: AppColors.secondary),
+          ),
           selected: selectedChip == 'Unverified',
-          selectedColor: Colors.deepOrangeAccent,
+          selectedColor: AppColors.primary,
           onSelected: (bool isSelected) {
             if (isSelected) {
               setState(() {

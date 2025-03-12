@@ -10,6 +10,8 @@ class AboutScreen extends StatefulWidget {
 class _AboutScreenState extends State<AboutScreen> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return const Scaffold(
+      body: Center(child: Text('Coming Soon', style: TextStyle(fontSize: 44))),
+    );
   }
 }
