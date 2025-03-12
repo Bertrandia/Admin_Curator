@@ -23,6 +23,12 @@ class _CuratorProfilesState extends ConsumerState<TaskAdminPage> {
     super.initState();
     Future.microtask(() {
       ref.watch(taskProvider.notifier).getTaskById(id: widget.taskId);
+
+      final task = ref.read(taskProvider).selectedTask;
+      if (task != null) {
+        ref.read(taskHoursProvider.notifier).state = task.taskDurationByAdmin;
+        ref.read(taskPriceProvider.notifier).state = task.taskPriceByAdmin;
+      }
     });
   }
 
@@ -236,6 +242,8 @@ class _CuratorProfilesState extends ConsumerState<TaskAdminPage> {
   }
 
   Widget _buildAdminControls(CuratorTaskNotifier notifier) {
+    final taskHours = ref.watch(taskHoursProvider);
+    final taskPrice = ref.watch(taskPriceProvider);
     final NumberFormat currencyFormat = NumberFormat.currency(
       symbol: '₹',
       decimalDigits: 0,
@@ -259,21 +267,19 @@ class _CuratorProfilesState extends ConsumerState<TaskAdminPage> {
 
           // Task Hours Slider
           Text(
-            'Task Completion Hours: ${_taskHours.toStringAsFixed(1)} hours',
+            'Task Completion Hours: ${taskHours.toStringAsFixed(1)} hours',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           Slider(
-            value: _taskHours,
+            value: taskHours,
             min: 0.5,
             max: 8.0,
             divisions: 15, // 0.5 interval from 0.5 to 10
             activeColor: Colors.deepOrange,
             inactiveColor: Colors.deepOrange.shade100,
-            label: '${_taskHours.toStringAsFixed(1)} hours',
+            label: '${taskHours.toStringAsFixed(1)} hours',
             onChanged: (value) {
-              setState(() {
-                _taskHours = value;
-              });
+              ref.read(taskHoursProvider.notifier).state = value;
             },
           ),
 
@@ -281,20 +287,20 @@ class _CuratorProfilesState extends ConsumerState<TaskAdminPage> {
 
           // Payment Slider
           Text(
-            'Task Payment: ${currencyFormat.format(_taskAmount)}',
+            'Task Payment: ${currencyFormat.format(taskPrice)}',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           Slider(
-            value: _taskAmount,
+            value: taskPrice,
             min: 100.0,
             max: 4000,
             divisions: 39, // 100 rs interval from 100 to 5000
             activeColor: Colors.deepOrange,
             inactiveColor: Colors.deepOrange.shade100,
-            label: currencyFormat.format(_taskAmount),
+            label: currencyFormat.format(taskPrice),
             onChanged: (value) {
               setState(() {
-                _taskAmount = value;
+                ref.read(taskPriceProvider.notifier).state = value;
               });
             },
           ),
@@ -308,8 +314,8 @@ class _CuratorProfilesState extends ConsumerState<TaskAdminPage> {
                 onPressed: () async {
                   await notifier
                       .taskPriceAndTime(
-                        taskDurationByAdmin: _taskHours,
-                        taskPriceByAdmin: _taskAmount,
+                        taskDurationByAdmin: taskHours,
+                        taskPriceByAdmin: taskPrice,
                         taskId: widget.taskId,
                       )
                       .then((val) {

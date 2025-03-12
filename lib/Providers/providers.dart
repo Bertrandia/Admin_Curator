@@ -24,3 +24,8 @@ final taskProvider = StateNotifierProvider<CuratorTaskNotifier, TaskState>(
 );
 
 final selectedChipProvider = StateProvider<String>((ref) => 'Pending');
+
+final taskHoursProvider = StateProvider<double>(
+  (ref) => 2.0,
+); // Default 2 hours
+final taskPriceProvider = StateProvider<double>((ref) => 500.0); // Default ₹500

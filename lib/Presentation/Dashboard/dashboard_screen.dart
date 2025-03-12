@@ -3,9 +3,10 @@ import 'package:admin_curator/Models/task_model.dart';
 import 'package:admin_curator/Presentation/Dashboard/Widgets/data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../Core/Notifiers/task_notifier.dart';
-import '../../Providers/providers.dart' hide taskProvider;
+import '../../Providers/providers.dart';
 //
 // class DashboardScreen extends StatefulWidget {
 //   const DashboardScreen({super.key});
@@ -28,16 +29,17 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final taskList = ref.watch(taskProvider);
     final int pendingTasks =
-        taskList.where((task) => task.curatorTaskStatus == 'Pending').length;
+        taskList.listOfTasks
+            .where((task) => task.curatorTaskStatus == 'Pending')
+            .length;
     final int completedTasks =
-        taskList.where((task) => task.curatorTaskStatus == 'Completed').length;
+        taskList.listOfTasks
+            .where((task) => task.curatorTaskStatus == 'Completed')
+            .length;
 
-    final int totalTasks = taskList.length;
+    final int totalTasks = taskList.listOfTasks.length;
     final selectedChip = ref.watch(selectedChipProvider);
-    final filteredTasks =
-        taskList
-            .where((task) => task.curatorTaskStatus == selectedChip)
-            .toList();
+    final filteredTasks = taskList.listOfTasks;
     return Scaffold(
       backgroundColor: AppColors.white,
       body: ListView(
@@ -81,7 +83,7 @@ class DashboardScreen extends ConsumerWidget {
                 _buildStatsCard(
                   title: 'Verification Pending',
                   count:
-                      taskList
+                      taskList.listOfTasks
                           .where((task) => task.curatorTaskStatus == 'On Hold')
                           .length,
                   icon: Icons.verified_user,
@@ -201,7 +203,7 @@ class DashboardScreen extends ConsumerWidget {
                     showCheckboxColumn: false,
                     header: null, // No header, we have our own section title
                     columns: _createColumns(),
-                    source: TaskDataSource(filteredTasks, context),
+                    source: TaskDataSource(filteredTasks, context, ref),
                     dataRowMinHeight: 64,
                     dataRowMaxHeight: 64,
                   ),
@@ -341,7 +343,7 @@ class DashboardScreen extends ConsumerWidget {
         label: Container(
           width: 80,
           child: Text(
-            'Actions',
+            'Task Price',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: const Color(0xFFBF4D28),

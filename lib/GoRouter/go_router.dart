@@ -1,11 +1,13 @@
 import 'package:admin_curator/Presentation/About/about.dart';
 import 'package:admin_curator/Presentation/Auth/Login/auth_signin.dart';
+import 'package:admin_curator/Presentation/Dashboard/components/assignPricePopUp..dart';
 import 'package:admin_curator/Presentation/Dashboard/dashboard_screen.dart';
 import 'package:admin_curator/Presentation/LoadingScreen/loading_screen.dart';
 import 'package:admin_curator/Presentation/MainLayout/main_layout.dart';
 import 'package:admin_curator/Presentation/TasksScreen/task_details_assign.dart';
 import 'package:admin_curator/Presentation/TasksScreen/tasks_screen.dart';
 import 'package:admin_curator/Providers/providers.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
