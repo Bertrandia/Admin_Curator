@@ -44,6 +44,7 @@ class TaskModel {
   Timestamp? taskEndTimeByCurator;
   List<String> listOfImagesUploadedByCurator;
   List<String> listOfVideosUploadedByCurator;
+  String? locationMode;
 
   TaskModel({
     required this.taskRef,
@@ -89,6 +90,7 @@ class TaskModel {
     this.taskEndTimeByCurator,
     this.listOfImagesUploadedByCurator = const [],
     this.listOfVideosUploadedByCurator = const [],
+    this.locationMode,
   });
 
   // Convert Firestore DocumentSnapshot to TaskModel
@@ -106,7 +108,7 @@ class TaskModel {
       isDelayed: data['isDelayed'] ?? false,
       isTaskDisabled: data['isTaskDisabled'] ?? false,
       lmRef: data['lmRef'] as DocumentReference?,
-      patronName: data['patronName'] ?? '',
+      patronName: data['partonName'] ?? '',
       patronAddress: data['patronAddress'] ?? '',
       patronRef: data['patronRef'] as DocumentReference?,
       priority: data['priority'] ?? '',
@@ -146,6 +148,7 @@ class TaskModel {
       listOfVideosUploadedByCurator: List<String>.from(
         data['listOfVideosUploadedByCurator'] ?? [],
       ),
+      locationMode: data['locationMode'] ?? 'Not available',
     );
   }
 
@@ -194,6 +197,7 @@ class TaskModel {
       'taskEndTimeByCurator': taskEndTimeByCurator,
       'listOfImagesUploadedByCurator': listOfImagesUploadedByCurator,
       'listOfVideosUploadedByCurator': listOfVideosUploadedByCurator,
+      'locationMode': locationMode,
     };
   }
 }

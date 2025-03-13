@@ -1,4 +1,5 @@
 import 'package:admin_curator/Constants/firebase_collections.dart';
+import 'package:admin_curator/Models/patron_model.dart';
 import 'package:admin_curator/Models/profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -60,5 +61,14 @@ class ProfileService {
       print("Error updating curator status: $e");
     }
     return null;
+  }
+
+  Future<CuratorModel> getCuratorByRef(String doc) async {
+    final curator =
+        await _firestore
+            .collection(FirebaseCollections.patronDetails)
+            .doc(doc)
+            .get();
+    return CuratorModel.fromJson(curator as Map<String, dynamic>);
   }
 }

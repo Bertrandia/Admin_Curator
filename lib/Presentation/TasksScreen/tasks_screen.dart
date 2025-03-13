@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../Models/profile.dart';
+import '../CuratorProfiles/Widgets/profile_details.dart';
+
 class CuratorProfilesList extends ConsumerStatefulWidget {
   const CuratorProfilesList({super.key});
 
@@ -26,6 +29,14 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
             color: Colors.white,
             child: Row(
               children: [
+                const Text(
+                  'Curators',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFBF4D28),
+                  ),
+                ),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.settings, color: Color(0xFFBF4D28)),
@@ -49,79 +60,19 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Our Curators',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFBF4D28),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'The perfect organizer for your needs',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Search Bar
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search by name, skill or location...',
-                      prefixIcon: const Icon(Icons.search),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Filter Chips
-                  Row(
-                    children: [
-                      FilterChip(
-                        label: const Text('All'),
-                        selected: true,
-                        onSelected: (bool selected) {},
-                        backgroundColor: Colors.white,
-                        selectedColor: const Color(0xFFF2A65A).withOpacity(0.3),
-                        checkmarkColor: const Color(0xFFBF4D28),
-                      ),
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: const Text('Top Rated'),
-                        selected: false,
-                        onSelected: (bool selected) {},
-                        backgroundColor: Colors.white,
-                      ),
-                      const SizedBox(width: 8),
-                      FilterChip(
-                        label: const Text('Near Me'),
-                        selected: false,
-                        onSelected: (bool selected) {},
-                        backgroundColor: Colors.white,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  const SizedBox(height: 16),
                   Expanded(
                     child: ListView.builder(
                       itemBuilder: (context, index) {
                         final curatorProfile = curatorState.profile[index];
                         return _buildCuratorCard(
+                          profile: curatorProfile,
                           name: curatorProfile.fullName,
                           title: curatorProfile.profile!.selectedSkills[0],
                           email:
                               curatorProfile.profile?.email ??
                               'Email not available',
 
-                          imageUrl: 'assets/arjun_profile.png',
+                          imageUrl: curatorProfile.profile?.profileImage ?? '',
                           specialties:
                               curatorProfile.profile?.selectedSkills ?? [],
                           location: curatorProfile.profile?.state ?? 'NA',
@@ -201,8 +152,10 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
     required String rate,
     required String availability,
     required BuildContext context,
+    required CuratorModel profile,
   }) {
     return Container(
+      margin: EdgeInsets.only(bottom: 5),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -231,7 +184,7 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: const Color(0xFFF2A65A).withOpacity(0.3),
-                    backgroundImage: AssetImage(imageUrl),
+                    backgroundImage: NetworkImage(imageUrl),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -357,7 +310,15 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder:
+                              (context) =>
+                                  ProfileDetailsPage(curatorModel: profile),
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFBF4D28),
                       foregroundColor: Colors.white,

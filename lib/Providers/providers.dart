@@ -7,7 +7,10 @@ import 'package:admin_curator/Core/States/auth_state.dart';
 import 'package:admin_curator/Core/States/curator_profile_state.dart';
 import 'package:admin_curator/Core/States/curator_task_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../Core/Notifiers/patron_Notifier.dart';
 import '../Core/Notifiers/user_task_notifier.dart';
+import '../Core/States/patron_state.dart';
+import '../Core/services/patron_service.dart';
 
 final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((
   ref,
@@ -23,9 +26,11 @@ final taskProvider = StateNotifierProvider<CuratorTaskNotifier, TaskState>(
   (ref) => CuratorTaskNotifier(TasksService()),
 );
 
-final selectedChipProvider = StateProvider<String>((ref) => 'Pending');
+final selectedChipProvider = StateProvider<String>((ref) => 'All');
 
-final taskHoursProvider = StateProvider<double>(
-  (ref) => 2.0,
-); // Default 2 hours
-final taskPriceProvider = StateProvider<double>((ref) => 500.0); // Default ₹500
+final taskHoursProvider = StateProvider<double>((ref) => 0); // Default 2 hours
+final taskPriceProvider = StateProvider<double>((ref) => 0.0); // Default ₹500
+
+final patronProvider = StateNotifierProvider<PatronNotifier, PatronState>(
+  (ref) => PatronNotifier(PatronService()),
+);

@@ -55,12 +55,22 @@ class ProfileDetailsPage extends ConsumerWidget {
               ],
             ),
           // Personal Information
-          sectionHeader("Personal Information"),
+          Row(
+            children: [
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Icon(Icons.arrow_back_ios),
+              ),
+              SizedBox(width: 10),
+              sectionHeader("Personal Information", true),
+            ],
+          ),
           personalInfoRow(
             "Full Name",
             '${curatorModel.profile!.firstName} ${curatorModel.profile!.lastName}',
           ),
-          personalInfoRow("Gender", curatorModel.profile!.gender),
           personalInfoRow("Nationality", curatorModel.profile!.nationality),
           personalInfoRow("Date of Birth", curatorModel.profile!.dob),
           personalInfoRow("Email ID", curatorModel.profile!.email),
@@ -72,7 +82,7 @@ class ProfileDetailsPage extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // Location
-          sectionHeader("Location"),
+          sectionHeader("Location", false),
           personalInfoRow(
             "Address",
             "${curatorModel.profile!.addressLine1} ${curatorModel.profile!.addressLine2}",
@@ -80,22 +90,21 @@ class ProfileDetailsPage extends ConsumerWidget {
           personalInfoRow("District", curatorModel.profile!.district),
           personalInfoRow("State", curatorModel.profile!.state),
           personalInfoRow("Pincode", curatorModel.profile!.pincode),
-          personalInfoRow("Landline Number", curatorModel.profile!.landline),
 
           const SizedBox(height: 20),
 
           // Identification
-          sectionHeader("Identification"),
+          sectionHeader("Identification", false),
           personalInfoRow("Aadhaar Number", curatorModel.profile!.aadhar),
           personalInfoRow("PAN Number", curatorModel.profile!.pan),
+
           // infoText("📄 Goibibo Completion Certificate"),
           // infoText("📄 Radhika Dua Resume.pdf"),
           // infoText("📄 Letter of Recommendation - Steven Hick"),
-
           const SizedBox(height: 20),
 
           // Higher Education
-          sectionHeader("Higher Education"),
+          sectionHeader("Higher Education", false),
           ...curatorModel.profile!.higherEducation.map(
             (edu) => personalInfoRow(edu.institute, edu.degree),
           ),
@@ -103,7 +112,7 @@ class ProfileDetailsPage extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // Work Experience
-          sectionHeader("Work Experience"),
+          sectionHeader("Work Experience", false),
           ...curatorModel.profile!.workExperience.map(
             (work) => personalInfoRow(work.organization, work.role),
           ),
@@ -116,7 +125,7 @@ class ProfileDetailsPage extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // Skills
-          sectionHeader("Skills"),
+          sectionHeader("Skills", false),
           ...curatorModel.profile!.selectedSkills.map(
             (skill) => infoText("• $skill"),
           ),
@@ -124,7 +133,7 @@ class ProfileDetailsPage extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // Availability
-          sectionHeader("Availability"),
+          sectionHeader("Availability", false),
           personalInfoRow(
             "Date of Availability",
             curatorModel.profile!.dateOfAvailability,
@@ -158,17 +167,21 @@ class ProfileDetailsPage extends ConsumerWidget {
   }
 
   /// Widget for section headers
-  Widget sectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.brown,
+  Widget sectionHeader(String title, bool isMainHeader) {
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.brown,
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
