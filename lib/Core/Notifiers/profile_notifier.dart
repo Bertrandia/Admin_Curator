@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:admin_curator/Core/Services/profile_service.dart';
 import 'package:admin_curator/Core/States/curator_profile_state.dart';
+import 'package:admin_curator/Models/profile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProfileNotifier extends StateNotifier<ProfileState> {
@@ -44,6 +46,23 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         errorMessage: 'Failed to change status',
       );
       return false;
+    }
+  }
+
+  Future<CuratorModel?> getCuratorById(String doc) async {
+    state = state.copyWith(isLoading: true, errorMessage: '');
+    try {
+      final user = await _profileService.getCuratorByRef(doc);
+      if (user != null) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: '',
+          singleProfile: user,
+        );
+        return user;
+      }
+    } catch (error) {
+      state = state.copyWith(isLoading: false, errorMessage: 'Failed');
     }
   }
 }

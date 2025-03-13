@@ -66,13 +66,24 @@ class _CuratorProfilesState extends ConsumerState<TaskAdminPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            Model?.taskSubject ?? 'NA',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.deepOrange.shade800,
-            ),
+          Row(
+            children: [
+              InkWell(
+                onTap: () {
+                  //   GoRouter.of(context).pop();
+                },
+                child: Icon(Icons.arrow_back),
+              ),
+              SizedBox(width: 5),
+              Text(
+                Model?.taskSubject ?? 'NA',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepOrange.shade800,
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 4),
           Text(

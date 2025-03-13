@@ -103,10 +103,7 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
     return Row(
       children: [
         ChoiceChip(
-          label: Text(
-            'Unverified',
-            style: TextStyle(color: AppColors.secondary),
-          ),
+          label: Text('Unverified', style: TextStyle(color: Colors.grey)),
           selected: selectedChip == 'Unverified',
           selectedColor: AppColors.primary,
           onSelected: (bool isSelected) {

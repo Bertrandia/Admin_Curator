@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:admin_curator/Models/model_tasks.dart';
+import 'package:admin_curator/Models/task_model.dart';
 import 'package:admin_curator/Presentation/About/about.dart';
 import 'package:admin_curator/Presentation/Auth/Login/auth_signin.dart';
 import 'package:admin_curator/Presentation/Dashboard/components/assignPricePopUp..dart';
@@ -5,6 +9,7 @@ import 'package:admin_curator/Presentation/Dashboard/dashboard_screen.dart';
 import 'package:admin_curator/Presentation/LoadingScreen/loading_screen.dart';
 import 'package:admin_curator/Presentation/MainLayout/main_layout.dart';
 import 'package:admin_curator/Presentation/TasksScreen/task_details_assign.dart';
+import 'package:admin_curator/Presentation/TasksScreen/tasks_details_age.dart';
 import 'package:admin_curator/Presentation/TasksScreen/tasks_screen.dart';
 import 'package:admin_curator/Providers/providers.dart';
 import 'package:flutter/material.dart';
@@ -39,10 +44,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/curatorProfiles',
             builder: (context, state) => const CuratorProfiles(),
           ),
-          GoRoute(
-            path: '/about',
-            builder: (context, state) => const AboutScreen(),
-          ),
+
           GoRoute(
             path: '/tasks',
             builder: (context, state) => const CuratorProfilesList(),
@@ -52,6 +54,19 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               final id = state.pathParameters['id'];
               return TaskAdminPage(id ?? '');
+            },
+          ),
+          GoRoute(
+            path: '/crm_tasks',
+            builder: (context, state) {
+              final TaskModel? data = state.extra as TaskModel?;
+              if (data != null) {
+                return TasksDetailsPAge(data);
+              } else {
+                return const Scaffold(
+                  body: Center(child: Text('No Data Found')),
+                );
+              }
             },
           ),
         ],

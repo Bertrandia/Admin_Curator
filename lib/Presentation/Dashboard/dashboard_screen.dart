@@ -39,7 +39,13 @@ class DashboardScreen extends ConsumerWidget {
 
     final int totalTasks = taskList.listOfTasks.length;
     final selectedChip = ref.watch(selectedChipProvider);
-    final filteredTasks = taskList.listOfTasks;
+    final filteredTasks =
+        selectedChip == "All"
+            ? taskList.listOfTasks
+            : taskList.listOfTasks
+                .where((task) => task.curatorTaskStatus == selectedChip)
+                .toList();
+    ;
     return Scaffold(
       backgroundColor: AppColors.white,
       body: ListView(
@@ -48,17 +54,13 @@ class DashboardScreen extends ConsumerWidget {
           const Text(
             'Task Dashboard',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Color(0xFFBF4D28),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Monitor and manage all your organization tasks',
-            style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-          ),
-          const SizedBox(height: 24),
+
+          const SizedBox(height: 10),
 
           // Stats Cards Row
           SingleChildScrollView(
@@ -100,46 +102,35 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(height: 32),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Task Management',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFFBF4D28),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
           // Search Bar
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search tasks by title, assignee...',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 0),
-            ),
-          ),
-
-          const SizedBox(height: 16),
+          // TextField(
+          //   decoration: InputDecoration(
+          //     hintText: 'Search tasks by title, assignee...',
+          //     prefixIcon: const Icon(Icons.search),
+          //     filled: true,
+          //     fillColor: Colors.white,
+          //     border: OutlineInputBorder(
+          //       borderRadius: BorderRadius.circular(12),
+          //       borderSide: BorderSide.none,
+          //     ),
+          //     contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          //   ),
+          // ),
+          const SizedBox(height: 25),
 
           // Task Filter Chips
           Wrap(
             spacing: 8,
             children:
-                ['Pending', 'On Hold', 'Completed'].map((filter) {
+                [
+                  'All',
+                  'Pending',
+                  'In Progress',
+                  'Payment Due',
+                  'Completed',
+                  'Rejected',
+                  'Under Verification',
+                ].map((filter) {
                   return FilterChip(
                     label: Text(filter),
                     selected: selectedChip == filter,
@@ -199,13 +190,12 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     columnSpacing: 16,
                     horizontalMargin: 16,
-                    rowsPerPage: 5,
+                    rowsPerPage: 10,
                     showCheckboxColumn: false,
                     header: null, // No header, we have our own section title
                     columns: _createColumns(),
                     source: TaskDataSource(filteredTasks, context, ref),
-                    dataRowMinHeight: 64,
-                    dataRowMaxHeight: 64,
+                    dataRowMaxHeight: 51,
                   ),
                 ),
               ),
@@ -280,26 +270,11 @@ class DashboardScreen extends ConsumerWidget {
   List<DataColumn> _createColumns() {
     return [
       DataColumn(
-        label: Container(
-          width: 120,
-          child: Text(
-            'Title',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFFBF4D28),
-            ),
-          ),
-        ),
-      ),
-      DataColumn(
-        label: Container(
-          width: 180,
-          child: Text(
-            'Status',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFFBF4D28),
-            ),
+        label: Text(
+          'Task ID',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFBF4D28),
           ),
         ),
       ),
@@ -307,7 +282,28 @@ class DashboardScreen extends ConsumerWidget {
         label: Container(
           width: 90,
           child: Text(
-            'LM',
+            'Task Subject',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFFBF4D28),
+            ),
+          ),
+        ),
+      ),
+      DataColumn(
+        label: Text(
+          'Patron Name',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFBF4D28),
+          ),
+        ),
+      ),
+      DataColumn(
+        label: Container(
+          width: 80,
+          child: Text(
+            'LM Name',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: const Color(0xFFBF4D28),
@@ -317,7 +313,7 @@ class DashboardScreen extends ConsumerWidget {
       ),
       DataColumn(
         label: Container(
-          width: 100,
+          width: 80,
           child: Text(
             'Assign Date',
             style: TextStyle(
@@ -329,7 +325,7 @@ class DashboardScreen extends ConsumerWidget {
       ),
       DataColumn(
         label: Container(
-          width: 130,
+          width: 80,
           child: Text(
             'Due Date',
             style: TextStyle(
@@ -343,7 +339,19 @@ class DashboardScreen extends ConsumerWidget {
         label: Container(
           width: 80,
           child: Text(
-            'Task Price',
+            'Status',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFFBF4D28),
+            ),
+          ),
+        ),
+      ),
+      DataColumn(
+        label: Container(
+          width: 80,
+          child: Text(
+            'View Detail',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: const Color(0xFFBF4D28),

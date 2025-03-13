@@ -96,14 +96,14 @@ class MainLayout extends ConsumerWidget {
                     children: [
                       _buildNavItem(
                         context,
-                        label: "Dashboard",
+                        label: "Task Management",
                         route: '/dashboard',
                         icon: Icons.dashboard,
                         authNotifier: authNotifier,
                       ),
                       _buildNavItem(
                         context,
-                        label: "Verification",
+                        label: "Onboard Curators",
                         route: '/curatorProfiles',
                         icon: Icons.task,
                         authNotifier: authNotifier,
@@ -117,8 +117,8 @@ class MainLayout extends ConsumerWidget {
                       ),
                       // _buildNavItem(
                       //   context,
-                      //   label: "About",
-                      //   route: '/about',
+                      //   label: " CRM Tasks",
+                      //   route: '/crm_tasks',
                       //   icon: Icons.analytics,
                       //   authNotifier: authNotifier,
                       // ),

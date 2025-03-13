@@ -9,6 +9,7 @@ class TasksService {
     return _firestore
         .collection(FirebaseCollections.createTaskCollection)
         .where('selectedHomeCuratorDepartment', isNull: false)
+        .orderBy('taskAssignDate', descending: true)
         .snapshots()
         .map((querySnapshot) {
           return querySnapshot.docs.map((doc) {
