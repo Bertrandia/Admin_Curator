@@ -67,36 +67,72 @@ class ProfileDetailsPage extends ConsumerWidget {
               sectionHeader("Personal Information", true),
             ],
           ),
+          SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: CircleAvatar(
+              radius: 60,
+              backgroundColor: Colors.grey[300], // Optional: Background color
+              child: ClipOval(
+                child: Image.network(
+                  curatorModel.profile!.profileImage ??
+                      'https://via.placeholder.com/150',
+                  width: 120,
+                  height: 120,
+                  fit:
+                      BoxFit
+                          .cover, // Ensures the image fills the circle without stretching
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(
+                      Icons.person,
+                      size: 60,
+                      color: Colors.grey[600],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+
+          SizedBox(height: 10),
           personalInfoRow(
             "Full Name",
             '${curatorModel.profile!.firstName} ${curatorModel.profile!.lastName}',
           ),
-          personalInfoRow("Nationality", curatorModel.profile!.nationality),
-          personalInfoRow("Date of Birth", curatorModel.profile!.dob),
-          personalInfoRow("Email ID", curatorModel.profile!.email),
+          personalInfoRow("Nationality:", curatorModel.profile!.nationality),
+          personalInfoRow("Date of Birth:", curatorModel.profile!.dob),
+          personalInfoRow("Email ID:", curatorModel.profile!.email),
           personalInfoRow(
-            "Contact Number",
+            "Contact Number:",
             curatorModel.profile!.contactNumber,
           ),
+          personalInfoRow("About:", curatorModel.profile!.aboutSelf),
 
           const SizedBox(height: 20),
 
           // Location
-          sectionHeader("Location", false),
+          sectionHeader('Bank Details', false),
+          personalInfoRow('Bank Name:', 'NA'),
+          personalInfoRow('Account Holder Name:', 'NA'),
+          personalInfoRow('Account Number:', 'NA'),
+          personalInfoRow('Account Type:', 'NA'),
+          personalInfoRow('IFSC code:', 'NA'),
+          SizedBox(height: 20),
+          sectionHeader("Location:", false),
           personalInfoRow(
             "Address",
             "${curatorModel.profile!.addressLine1} ${curatorModel.profile!.addressLine2}",
           ),
-          personalInfoRow("District", curatorModel.profile!.district),
-          personalInfoRow("State", curatorModel.profile!.state),
-          personalInfoRow("Pincode", curatorModel.profile!.pincode),
+          personalInfoRow("District:", curatorModel.profile!.district),
+          personalInfoRow("State:", curatorModel.profile!.state),
+          personalInfoRow("Pincode:", curatorModel.profile!.pincode),
 
           const SizedBox(height: 20),
 
           // Identification
           sectionHeader("Identification", false),
-          personalInfoRow("Aadhaar Number", curatorModel.profile!.aadhar),
-          personalInfoRow("PAN Number", curatorModel.profile!.pan),
+          personalInfoRow("Aadhaar Number:", curatorModel.profile!.aadhar),
+          personalInfoRow("PAN Number:", curatorModel.profile!.pan),
 
           // infoText("📄 Goibibo Completion Certificate"),
           // infoText("📄 Radhika Dua Resume.pdf"),
@@ -118,7 +154,7 @@ class ProfileDetailsPage extends ConsumerWidget {
           ),
 
           personalInfoRow(
-            "Department of Interest",
+            "Dept. of Interest:",
             curatorModel.profile!.departmentInterested,
           ),
 
