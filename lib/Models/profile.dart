@@ -114,8 +114,10 @@ class ProfileData {
   final String dateOfAvailability;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String aboutSelf;
 
   ProfileData({
+    required this.aboutSelf,
     required this.profileImage,
     required this.firstName,
     required this.lastName,
@@ -171,6 +173,7 @@ class ProfileData {
       'dateOfAvailability': dateOfAvailability,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'aboutUrSelf': aboutSelf,
     };
   }
 
@@ -214,6 +217,7 @@ class ProfileData {
       dateOfAvailability: map['dateOfAvailability'] ?? '',
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),
+      aboutSelf: map['aboutUrSelf'],
     );
   }
 }
