@@ -31,6 +31,7 @@ class AuthService {
       );
       if (userCredential.user != null) {
         final user = await getUserDetails(userCredential.user!.uid);
+        print(user?.toMap());
         print("******************");
         print(user.toString());
         print("*****************");

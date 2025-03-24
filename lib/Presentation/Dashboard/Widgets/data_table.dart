@@ -1,13 +1,11 @@
-import 'dart:convert';
-
 import 'package:admin_curator/Constants/app_colors.dart';
 import 'package:admin_curator/Models/model_tasks.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-
 import '../../../Providers/providers.dart';
+import '../../Widgets/asssign_pric_component.dart';
 
 class TaskDataSource extends DataTableSource {
   final List<TaskModel> tasks;
@@ -100,31 +98,60 @@ class TaskDataSource extends DataTableSource {
               //   onPressed: () => _updateTaskStatus(task, "Rejected"),
               // ),
               task.taskPriceByAdmin == 0
-                  ? ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: AppColors.primary,
-                    ),
-                    onPressed: () {
-                      print(task.taskRef);
-                      //
-                      // showModalBottomSheet(
-                      //   context: context,
-                      //   builder: (context) {
-                      //     return AssignPriceBottomSheet(taskId: task.taskRef);
-                      //   },
-                      // );
-                      showAssignPriceDialog(
-                        context,
-                        ref,
-                        task.taskRef,
-                        task.taskSubject,
-                        task.taskDescription,
-                        task.assignedTimeSlot ?? 'No Time Slot Available',
-                        task.locationMode ?? 'Not Available',
-                      );
-                    },
-                    child: Text('Assign Price'),
+                  ? Row(
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondary,
+                          foregroundColor: AppColors.primary,
+                        ),
+                        onPressed: () {
+                          print(task.taskRef);
+                          //
+                          // showModalBottomSheet(
+                          //   context: context,
+                          //   builder: (context) {
+                          //     return AssignPriceBottomSheet(taskId: task.taskRef);
+                          //   },
+                          // );
+                          showAssignPriceDialog(
+                            context,
+                            ref,
+                            task.taskRef,
+                            task.taskSubject,
+                            task.taskDescription,
+                            task.assignedTimeSlot ?? 'No Time Slot Available',
+                            task.locationMode ?? 'Not Available',
+                            task.taskPriceByAdmin,
+                            task.taskDurationByAdmin,
+                          );
+                        },
+                        child: Text('Assign Price'),
+                      ),
+                      PopupMenuButton<String>(
+                        icon: Icon(Icons.more_vert),
+                        itemBuilder:
+                            (BuildContext context) => [
+                              PopupMenuItem(
+                                value: "View",
+                                child: Text("View"),
+                                onTap: () {
+                                  context.go('/crm_tasks', extra: task);
+                                  // context.go(
+                                  //   '/crm_tasks_github/${task.taskRef}',
+                                  // );
+                                },
+                              ),
+                              PopupMenuItem(
+                                value: "Delete",
+                                child: Text(
+                                  "Delete",
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                      ),
+                    ],
                   )
                   : ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -177,199 +204,21 @@ class TaskDataSource extends DataTableSource {
     String taskDescription,
     String timeSlot,
     String taskMode,
+    double taskPrice,
+    double taskHours,
   ) {
-    final taskNotifier = ref.read(taskProvider.notifier);
-    final currencyFormat = NumberFormat.currency(
-      symbol: '₹',
-      decimalDigits: 0,
-      locale: 'hi_IN',
-    );
-
-    double taskHours = ref.read(taskHoursProvider);
-    double taskPrice = ref.read(taskPriceProvider);
-
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              insetPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 24,
-              ),
-              child: Container(
-                color: Colors.white70,
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Task Details',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Subject:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    Text(
-                      taskSubject,
-                      style: TextStyle(fontSize: 16, color: AppColors.primary),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Description:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    Text(
-                      taskDescription,
-                      style: TextStyle(fontSize: 16, color: AppColors.primary),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Time Slot:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    Text(
-                      timeSlot,
-                      style: TextStyle(fontSize: 16, color: AppColors.primary),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Time Mode:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    Text(
-                      taskMode,
-                      style: TextStyle(fontSize: 16, color: AppColors.primary),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Task Hours: ${taskHours.toStringAsFixed(1)} hours',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Slider(
-                      value: taskHours,
-                      min: 0.0,
-                      max: 8.0,
-                      divisions: 16,
-                      activeColor: AppColors.primary,
-                      inactiveColor: Colors.deepOrange.shade100,
-                      label: '${taskHours.toStringAsFixed(1)} hours',
-                      onChanged: (value) {
-                        setState(() => taskHours = value);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Task Price: ${currencyFormat.format(taskPrice)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Slider(
-                      value: taskPrice,
-                      min: 0,
-                      max: 4000,
-                      divisions: 40,
-                      activeColor: AppColors.primary,
-                      inactiveColor: Colors.deepOrange.shade100,
-                      label: currencyFormat.format(taskPrice),
-                      onChanged: (value) {
-                        setState(() => taskPrice = value);
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            ref.read(taskHoursProvider.notifier).state =
-                                taskHours;
-                            ref.read(taskPriceProvider.notifier).state =
-                                taskPrice;
-                            await taskNotifier
-                                .taskPriceAndTime(
-                                  taskDurationByAdmin: taskHours,
-                                  taskPriceByAdmin: taskPrice,
-                                  taskId: taskId,
-                                )
-                                .then((val) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Price & Time Updated!"),
-                                    ),
-                                  );
-                                  Navigator.pop(context);
-                                });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.secondary,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: Text(
-                            'Save Changes',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+      builder:
+          (context) => AssignPriceDialog(
+            taskPrice: taskPrice,
+            taskId: taskId,
+            taskSubject: taskSubject,
+            taskDescription: taskDescription,
+            timeSlot: timeSlot,
+            taskMode: taskMode,
+            taskHours: taskHours,
+          ),
     );
   }
 

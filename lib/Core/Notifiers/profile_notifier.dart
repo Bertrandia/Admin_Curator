@@ -49,17 +49,17 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     }
   }
 
-  Future<CuratorModel?> getCuratorById(String doc) async {
+  void getCuratorById(String doc) async {
     state = state.copyWith(isLoading: true, errorMessage: '');
     try {
       final user = await _profileService.getCuratorByRef(doc);
+      print('user is : $user');
       if (user != null) {
         state = state.copyWith(
           isLoading: false,
           errorMessage: '',
           singleProfile: user,
         );
-        return user;
       }
     } catch (error) {
       state = state.copyWith(isLoading: false, errorMessage: 'Failed');

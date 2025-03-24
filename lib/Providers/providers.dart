@@ -34,3 +34,4 @@ final taskPriceProvider = StateProvider<double>((ref) => 0.0); // Default ₹500
 final patronProvider = StateNotifierProvider<PatronNotifier, PatronState>(
   (ref) => PatronNotifier(PatronService()),
 );
+final selectedCuratorProvider = StateProvider<String?>((ref) => null);

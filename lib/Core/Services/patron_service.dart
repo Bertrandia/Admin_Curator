@@ -5,6 +5,6 @@ import '../../Models/patron_model.dart';
 class PatronService {
   Future<PatronModel> getPatronModel(DocumentReference ref) async {
     DocumentSnapshot patronRef = await ref.get();
-    return PatronModel.fromFirestore(patronRef);
+    return PatronModel.fromJson(patronRef.data() as Map<String, dynamic>);
   }
 }
