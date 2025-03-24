@@ -66,8 +66,10 @@ class ProfileService {
   Future<CuratorModel> getCuratorByRef(String doc) async {
     final curator =
         await _firestore
-            .collection(FirebaseCollections.patronDetails)
+            .collection(FirebaseCollections.consultantCollection)
             .doc(doc)
+            .collection(FirebaseCollections.profileCollection)
+            .doc(FirebaseCollections.userProfile)
             .get();
     return CuratorModel.fromJson(curator as Map<String, dynamic>);
   }

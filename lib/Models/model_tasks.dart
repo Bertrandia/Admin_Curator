@@ -45,6 +45,7 @@ class TaskModel {
   List<String> listOfImagesUploadedByCurator;
   List<String> listOfVideosUploadedByCurator;
   String? locationMode;
+  bool isAdminApproved;
 
   TaskModel({
     required this.taskRef,
@@ -91,6 +92,7 @@ class TaskModel {
     this.listOfImagesUploadedByCurator = const [],
     this.listOfVideosUploadedByCurator = const [],
     this.locationMode,
+    this.isAdminApproved = false,
   });
 
   // Convert Firestore DocumentSnapshot to TaskModel
@@ -149,6 +151,7 @@ class TaskModel {
         data['listOfVideosUploadedByCurator'] ?? [],
       ),
       locationMode: data['locationMode'] ?? 'Not available',
+      isAdminApproved: data['isAdminApproved'] ?? false,
     );
   }
 
