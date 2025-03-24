@@ -40,7 +40,7 @@ class DashboardScreen extends ConsumerWidget {
     final int totalTasks = taskList.listOfTasks.length;
     final selectedChip = ref.watch(selectedChipProvider);
     final filteredTasks =
-        selectedChip == "All"
+        selectedChip == "Hii"
             ? taskList.listOfTasks
             : taskList.listOfTasks
                 .where((task) => task.curatorTaskStatus == selectedChip)
@@ -123,7 +123,7 @@ class DashboardScreen extends ConsumerWidget {
             spacing: 8,
             children:
                 [
-                  'All',
+                  'Hii',
                   'Pending',
                   'In Progress',
                   'Payment Due',
