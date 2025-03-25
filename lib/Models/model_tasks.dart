@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TaskModel {
+  DocumentReference? taskDocRef;
   String taskRef;
   String assignedLMName;
   DocumentReference? backupLmRef;
@@ -45,8 +46,10 @@ class TaskModel {
   List<String> listOfImagesUploadedByCurator;
   List<String> listOfVideosUploadedByCurator;
   String? locationMode;
+  bool isAdminApproved;
 
   TaskModel({
+    this.taskDocRef,
     required this.taskRef,
     required this.assignedLMName,
     this.backupLmRef,
@@ -91,12 +94,14 @@ class TaskModel {
     this.listOfImagesUploadedByCurator = const [],
     this.listOfVideosUploadedByCurator = const [],
     this.locationMode,
+    this.isAdminApproved = false,
   });
 
   // Convert Firestore DocumentSnapshot to TaskModel
   factory TaskModel.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return TaskModel(
+      taskDocRef: doc.reference,
       taskRef: doc.id,
       assignedLMName: data['assignedLMName'] ?? '',
       backupLmRef: data['backupLmRef'] as DocumentReference?,
@@ -149,12 +154,14 @@ class TaskModel {
         data['listOfVideosUploadedByCurator'] ?? [],
       ),
       locationMode: data['locationMode'] ?? 'Not available',
+      isAdminApproved: data['isAdminApproved'] ?? false,
     );
   }
 
   // Convert TaskModel to Firestore Map
   Map<String, dynamic> toFirestore() {
     return {
+      'taskDocRef': taskDocRef,
       'assignedLMName': assignedLMName,
       'backupLmRef': backupLmRef,
       'billingModel': billingModel,

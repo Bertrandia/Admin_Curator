@@ -2,14 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
   final String city;
-  final DateTime createdTime;
+  // final DateTime createdTime;
   final String currentStatus;
   final List<String> department;
   final String designation;
   final String displayName;
-  final DateTime dob;
+  //  final DateTime dob;
   final String email;
-  final DateTime hiringDate;
+  // final DateTime hiringDate;
   final bool isCRMAdmin;
   final bool isDev;
   final bool isHomeDecorEnabled;
@@ -30,17 +30,18 @@ class UserModel {
   final String uid;
   final String volopayCardHolderName;
   final String volopayCardNumber;
+  final DocumentReference<Object?>? documentReference;
 
   UserModel({
     required this.city,
-    required this.createdTime,
+    //   required this.createdTime,
     required this.currentStatus,
     required this.department,
     required this.designation,
     required this.displayName,
-    required this.dob,
+    //  required this.dob,
     required this.email,
-    required this.hiringDate,
+    //  required this.hiringDate,
     required this.isCRMAdmin,
     required this.isDev,
     required this.isHomeDecorEnabled,
@@ -61,19 +62,21 @@ class UserModel {
     required this.uid,
     required this.volopayCardHolderName,
     required this.volopayCardNumber,
+    this.documentReference,
   });
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
+  factory UserModel.fromMap(Map<String, dynamic> map,  {DocumentReference<Object?>? docRef}) {
     return UserModel(
       city: map['city'] ?? '',
-      createdTime: (map['created_time'] as Timestamp).toDate(),
+      //  createdTime:
+      //      (map['created_time'] as Timestamp).toDate() ?? DateTime.now(),
       currentStatus: map['currentStatus'] ?? '',
       department: List<String>.from(map['department'] ?? []),
       designation: map['designation'] ?? '',
       displayName: map['display_name'] ?? '',
-      dob: (map['dob'] as Timestamp).toDate(),
+      //    dob: (map['dob'] as Timestamp).toDate() ?? DateTime.now(),
       email: map['email'] ?? '',
-      hiringDate: (map['hiringDate'] as Timestamp).toDate(),
+      //    hiringDate: (map['hiringDate'] as Timestamp).toDate() ?? DateTime.now(),
       isCRMAdmin: map['isCRMAdmin'] ?? false,
       isDev: map['isDev'] ?? false,
       isHomeDecorEnabled: map['isHomeDecorEnabled'] ?? false,
@@ -94,20 +97,21 @@ class UserModel {
       uid: map['uid'] ?? '',
       volopayCardHolderName: map['volopayCardHolderName'] ?? '',
       volopayCardNumber: map['volopayCardNumber'] ?? '',
+      documentReference: docRef,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'city': city,
-      'created_time': Timestamp.fromDate(createdTime),
+      // 'created_time': Timestamp.fromDate(createdTime),
       'currentStatus': currentStatus,
       'department': department,
       'designation': designation,
       'display_name': displayName,
-      'dob': Timestamp.fromDate(dob),
+      //  'dob': Timestamp.fromDate(dob),
       'email': email,
-      'hiringDate': Timestamp.fromDate(hiringDate),
+      //   'hiringDate': Timestamp.fromDate(hiringDate),
       'isCRMAdmin': isCRMAdmin,
       'isDev': isDev,
       'isHomeDecorEnabled': isHomeDecorEnabled,
@@ -128,6 +132,7 @@ class UserModel {
       'uid': uid,
       'volopayCardHolderName': volopayCardHolderName,
       'volopayCardNumber': volopayCardNumber,
+      'documentReference': documentReference,
     };
   }
 }

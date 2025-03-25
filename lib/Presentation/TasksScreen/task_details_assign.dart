@@ -35,7 +35,7 @@ class _CuratorProfilesState extends ConsumerState<TaskAdminPage> {
   @override
   Widget build(BuildContext context) {
     final taskState = ref.watch(taskProvider);
-    final notifier = ref.read(taskProvider.notifier);
+    final notifier = ref.watch(taskProvider.notifier);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Row(
@@ -328,6 +328,7 @@ class _CuratorProfilesState extends ConsumerState<TaskAdminPage> {
                         taskDurationByAdmin: taskHours,
                         taskPriceByAdmin: taskPrice,
                         taskId: widget.taskId,
+                        isAdminApproved: true,
                       )
                       .then((val) {
                         ScaffoldMessenger.of(context).showSnackBar(

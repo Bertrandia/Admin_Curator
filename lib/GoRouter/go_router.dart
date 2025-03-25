@@ -17,6 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../Presentation/CuratorProfiles/curator_profiles.dart';
+import '../Presentation/TasksScreen/task_details_github.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authNotifierProvider);
@@ -67,6 +68,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                   body: Center(child: Text('No Data Found')),
                 );
               }
+            },
+          ),
+          GoRoute(
+            path: '/crm_tasks_github/:taskID',
+            builder: (context, state) {
+              final taskId = state.pathParameters['taskId'] ?? '';
+              return TaskDetailsScreen(taskId: taskId);
             },
           ),
         ],

@@ -1,6 +1,8 @@
 import 'package:admin_curator/Core/Notifiers/auth_notifier.dart';
+import 'package:admin_curator/Core/Notifiers/curatorBill_notifier.dart';
 import 'package:admin_curator/Core/Notifiers/profile_notifier.dart';
 import 'package:admin_curator/Core/Services/auth_service.dart';
+import 'package:admin_curator/Core/Services/curatorBill_service.dart';
 import 'package:admin_curator/Core/Services/profile_service.dart';
 import 'package:admin_curator/Core/Services/task_service.dart';
 import 'package:admin_curator/Core/States/auth_state.dart';
@@ -34,3 +36,9 @@ final taskPriceProvider = StateProvider<double>((ref) => 0.0); // Default ₹500
 final patronProvider = StateNotifierProvider<PatronNotifier, PatronState>(
   (ref) => PatronNotifier(PatronService()),
 );
+final selectedCuratorProvider = StateProvider<String?>((ref) => null);
+
+final curatorBillProvider =
+    StateNotifierProvider<CuratorBillNotifier, TaskState>(
+      (ref) => CuratorBillNotifier(CuratorBillService()),
+    );

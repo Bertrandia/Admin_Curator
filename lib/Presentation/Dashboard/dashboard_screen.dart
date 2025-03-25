@@ -1,11 +1,9 @@
 import 'package:admin_curator/Constants/app_colors.dart';
 import 'package:admin_curator/Models/task_model.dart';
+import 'package:admin_curator/Presentation/Dashboard/Widgets/custom_SearchableDD.dart';
 import 'package:admin_curator/Presentation/Dashboard/Widgets/data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-
-import '../../Core/Notifiers/task_notifier.dart';
 import '../../Providers/providers.dart';
 //
 // class DashboardScreen extends StatefulWidget {
@@ -28,6 +26,8 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final taskList = ref.watch(taskProvider);
+    final profileState = ref.watch(profileProvider);
+    final selectedCurator = ref.watch(selectedCuratorProvider);
     final int pendingTasks =
         taskList.listOfTasks
             .where((task) => task.curatorTaskStatus == 'Pending')
@@ -40,11 +40,14 @@ class DashboardScreen extends ConsumerWidget {
     final int totalTasks = taskList.listOfTasks.length;
     final selectedChip = ref.watch(selectedChipProvider);
     final filteredTasks =
-        selectedChip == "Hii"
-            ? taskList.listOfTasks
-            : taskList.listOfTasks
-                .where((task) => task.curatorTaskStatus == selectedChip)
-                .toList();
+        taskList.listOfTasks.where((task) {
+          final matchesStatus =
+              selectedChip == "All" || task.curatorTaskStatus == selectedChip;
+          final matchesCurator =
+              selectedCurator == null ||
+              task.taskAssignedToCurator == selectedCurator;
+          return matchesStatus && matchesCurator;
+        }).toList();
     ;
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -123,7 +126,7 @@ class DashboardScreen extends ConsumerWidget {
             spacing: 8,
             children:
                 [
-                  'Hii',
+                  'All',
                   'Pending',
                   'In Progress',
                   'Payment Due',
@@ -153,6 +156,34 @@ class DashboardScreen extends ConsumerWidget {
           ),
 
           const SizedBox(height: 16),
+
+
+          Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: 250,
+              // child: DropdownButton(
+              //   dropdownColor: AppColors.white,
+
+              //   borderRadius: BorderRadius.circular(20),
+              //   isExpanded: false,
+              //   value: selectedCurator,
+              //   hint: Text('Select Curator'),
+              //   items:
+              //       profileState.profile.map((value) {
+              //         return DropdownMenuItem(
+              //           child: Text(value.fullName),
+              //           value: value.id,
+              //         );
+              //       }).toList(),
+              //   onChanged: (value) {
+              //     ref.read(selectedCuratorProvider.notifier).state = value;
+              //   },
+              // ),
+              child: SearchableDropdown(),
+            ),
+          ),
+          SizedBox(height: 20),
 
           // Task DataTable Card with styled container
           Container(

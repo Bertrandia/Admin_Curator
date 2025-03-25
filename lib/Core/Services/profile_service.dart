@@ -43,13 +43,16 @@ class ProfileService {
     String curatorId, {
     required bool isVerified,
     required bool isRejected,
+     String? rejectionReason,
+     String? rejectedBy,
+     DateTime? rejectedAt,
   }) async {
     try {
       final docRef = _firestore
           .collection(FirebaseCollections.consultantCollection)
           .doc(curatorId);
 
-      await docRef.update({'isVerified': isVerified, 'isRejected': isRejected});
+      await docRef.update({'isVerified': isVerified, 'isRejected': isRejected, 'reasonOfRejection': rejectionReason, 'rejectedAt': rejectedAt, 'rejectedBy': rejectedBy});
 
       final updatedSnapshot = await docRef.get();
       if (updatedSnapshot.exists) {
@@ -66,8 +69,10 @@ class ProfileService {
   Future<CuratorModel> getCuratorByRef(String doc) async {
     final curator =
         await _firestore
-            .collection(FirebaseCollections.patronDetails)
+            .collection(FirebaseCollections.consultantCollection)
             .doc(doc)
+            .collection(FirebaseCollections.profileCollection)
+            .doc(FirebaseCollections.userProfile)
             .get();
     return CuratorModel.fromJson(curator as Map<String, dynamic>);
   }
