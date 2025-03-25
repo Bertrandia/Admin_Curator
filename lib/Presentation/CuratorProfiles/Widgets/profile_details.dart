@@ -1,4 +1,5 @@
 import 'package:admin_curator/Models/profile.dart';
+import 'package:admin_curator/Presentation/CuratorProfiles/Widgets/rejectionRandomSheet.dart';
 import 'package:admin_curator/Presentation/Widgets/global_btn.dart';
 import 'package:admin_curator/Providers/providers.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ class ProfileDetailsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileNotifier = ref.read(profileProvider.notifier);
+    final authState = ref.watch(authNotifierProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       body: ListView(
@@ -41,13 +43,30 @@ class ProfileDetailsPage extends ConsumerWidget {
                   width: 150,
                   child: GlobalButton(
                     text: "Reject",
-                    onPressed: () async {
-                      await profileNotifier.updateVerificationStatus(
-                        consultantId: curatorModel.id,
-                        isVerified: false,
-                        isRejected: true,
+                    // onPressed: () async {
+                    onPressed: () {
+                      final String userEmail =
+                          authState.user!.email ??
+                          "Unknown User"; // Fetch logged-in user's email
+                      // showModalBottomSheet(
+                      //   context: context,
+                      //   isScrollControlled: true,
+                      //   builder:
+                      //       (context) => RejectionBottomSheet(
+                      //         consultantId: curatorModel.id,
+                      //         profileNotifier: profileNotifier,
+                      //         userEmail: userEmail,
+                      //       ),
+                      // );
+                      showDialog(
+                        context: context,
+                        builder:
+                            (context) => RejectionDialog(
+                              consultantId: curatorModel.id,
+                              profileNotifier: profileNotifier,
+                              userEmail: userEmail,
+                            ),
                       );
-                      Navigator.pop(context);
                     },
                     height: 35,
                   ),

@@ -6,6 +6,7 @@ class CuratorModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool status;
+  // final bool isContractSigned;
 
   final bool isProfileCompleted;
   final bool isVerified;
@@ -20,6 +21,7 @@ class CuratorModel {
     required this.updatedAt,
     required this.status,
     required this.isVerified,
+    // required this.isContractSigned,
     this.profile,
     required this.isProfileCompleted,
   });
@@ -34,7 +36,7 @@ class CuratorModel {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'status': status,
-
+      // 'isContractSigned' : isContractSigned,
       'isVerified': isVerified,
       'profile': profile?.toMap(), // Ensure proper serialization
       'isProfileCompleted': isProfileCompleted,
@@ -51,6 +53,7 @@ class CuratorModel {
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       status: json['status'] as bool,
+      // isContractSigned: json['isContractSigned'] as bool,
       isVerified: json['isVerified'] as bool,
       isProfileCompleted: json['isProfileCompleted'] as bool,
       profile:
@@ -67,6 +70,7 @@ class CuratorModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? status,
+    // bool? isContractSigned,
     bool? isRejected,
     bool? isVerified,
     bool? isProfileCompleted,
@@ -80,7 +84,7 @@ class CuratorModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       status: status ?? this.status,
-
+      // isContractSigned: isContractSigned ?? this.isContractSigned,
       isVerified: isVerified ?? this.isVerified,
       isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
       profile: profile ?? this.profile,
@@ -115,6 +119,7 @@ class ProfileData {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String aboutSelf;
+  final bool isContractSigned;
 
   ProfileData({
     required this.aboutSelf,
@@ -143,6 +148,7 @@ class ProfileData {
     required this.imagesWithTitle,
     required this.createdAt,
     required this.updatedAt,
+    required this.isContractSigned,
   });
 
   /// Convert Model to Firestore Map
@@ -174,6 +180,7 @@ class ProfileData {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'aboutUrSelf': aboutSelf,
+      'isContractSigned': isContractSigned,
     };
   }
 
@@ -218,6 +225,7 @@ class ProfileData {
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),
       aboutSelf: map['aboutUrSelf'],
+      isContractSigned: map['isContractSigned'] ?? false,
     );
   }
 }

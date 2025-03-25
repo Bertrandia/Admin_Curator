@@ -14,6 +14,7 @@ class CuratorProfiles extends ConsumerStatefulWidget {
 
 class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
   String selectedChip = 'Unverified';
+  String selectedChoiceChip = 'Unsigned';
 
   List<CuratorModel> curators = [];
 
@@ -68,30 +69,160 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
 
             const SizedBox(height: 20),
 
+            // Expanded(
+            //   child: ListView.builder(
+            //     itemCount:
+            //         curators
+            //             .where(
+            //               (curator) =>
+            //                   selectedChip == 'Verified'
+            //                       ? curator.isVerified
+            //                       : !curator.isVerified,
+            //             )
+            //             .length,
+            //     itemBuilder: (context, index) {
+            //       final profile =
+            //           curators
+            //               .where(
+            //                 (curator) =>
+            //                     selectedChip == 'Verified'
+            //                         ? curator.isVerified
+            //                         : !curator.isVerified,
+            //               )
+            //               .toList()[index];
+            //       return _buildProfileCard(profile);
+            //     },
+            //   ),
+            // ),
             Expanded(
-              child: ListView.builder(
-                itemCount:
-                    curators
-                        .where(
-                          (curator) =>
-                              selectedChip == 'Verified'
-                                  ? curator.isVerified
-                                  : !curator.isVerified,
-                        )
-                        .length,
-                itemBuilder: (context, index) {
-                  final profile =
-                      curators
-                          .where(
-                            (curator) =>
-                                selectedChip == 'Verified'
-                                    ? curator.isVerified
-                                    : !curator.isVerified,
-                          )
-                          .toList()[index];
-                  return _buildProfileCard(profile);
-                },
-              ),
+              child:
+                  selectedChip == 'Verified'
+                      ? ListView.builder(
+                        itemCount:
+                            curators
+                                .where((curator) => curator.isVerified)
+                                .length,
+                        itemBuilder: (context, index) {
+                          final profile =
+                              curators
+                                  .where((curator) => curator.isVerified)
+                                  .toList()[index];
+                          return _buildProfileCard(profile);
+                        },
+                      )
+                      : Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              
+                              ChoiceChip(
+                                label: Text(
+                                  'Contract Signed',
+                                  style: TextStyle(
+                                    color:
+                                        selectedChoiceChip == 'Contract Signed'
+                                            ? Colors.white
+                                            : Colors.black,
+                                  ),
+                                ),
+                                selected: selectedChoiceChip == 'Contract Signed',
+                                selectedColor: Colors.green,
+
+                                onSelected: (bool isSelected) {
+                                  if (isSelected) {
+                                    setState(() {
+                                      selectedChoiceChip = 'Contract Signed';
+                                    });
+                                  }
+                                },
+                              ),
+                              const SizedBox(width: 10),
+                              ChoiceChip(
+                                label: Text(
+                                  'Unsigned',
+                                  style: TextStyle(
+                                    color:
+                                        selectedChoiceChip == 'Unsigned'
+                                            ? Colors.white
+                                            : Colors.black,
+                                  ),
+                                ),
+                                selected: selectedChoiceChip == 'Unsigned',
+                                selectedColor: AppColors.primary,
+                                disabledColor: Colors.grey,
+                                onSelected: (bool isSelected) {
+                                  if (isSelected) {
+                                    setState(() {
+                                      selectedChoiceChip = 'Unsigned';
+                                    });
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                          // Wrap(
+                          //   spacing: 8.0,
+                          //   alignment: WrapAlignment.center,
+                          //   children:
+                          //       ['Contract Signed', 'Unsigned'].map((status) {
+                          //         return ChoiceChip(
+                          //           label: Text(status),
+                          //           selected: selectedChoiceChip == status,
+                          //           onSelected: (isSelected) {
+                          //             if (isSelected) {
+                          //               setState(() {
+                          //                 selectedChoiceChip = status;
+                          //               });
+                          //             }
+                          //           },
+                          //         );
+                          //       }).toList(),
+                          // ),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount:
+                                  curators
+                                      .where(
+                                        (curator) =>
+                                            selectedChoiceChip ==
+                                                    'Contract Signed'
+                                                ? curator
+                                                        .profile!
+                                                        .isContractSigned &&
+                                                    curator.isVerified == false
+                                                : !curator
+                                                        .profile!
+                                                        .isContractSigned &&
+                                                    curator.isVerified == false,
+                                      )
+                                      .length,
+                              itemBuilder: (context, index) {
+                                final profile =
+                                    curators
+                                        .where(
+                                          (curator) =>
+                                              selectedChoiceChip ==
+                                                      'Contract Signed'
+                                                  ? curator
+                                                          .profile!
+                                                          .isContractSigned &&
+                                                      curator.isVerified ==
+                                                          false
+                                                  : !curator
+                                                          .profile!
+                                                          .isContractSigned &&
+                                                      curator.isVerified ==
+                                                          false,
+                                        )
+                                        .toList()[index];
+                                return _buildProfileCard(profile);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
             ),
           ],
         ),
@@ -103,9 +234,15 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
     return Row(
       children: [
         ChoiceChip(
-          label: Text('Unverified', style: TextStyle(color: Colors.grey)),
+          label: Text(
+            'Unverified',
+            style: TextStyle(
+              color: selectedChip == 'Unverified' ? Colors.white : Colors.black,
+            ),
+          ),
           selected: selectedChip == 'Unverified',
           selectedColor: AppColors.primary,
+          disabledColor: Colors.grey,
           onSelected: (bool isSelected) {
             if (isSelected) {
               setState(() {
@@ -116,7 +253,12 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
         ),
         const SizedBox(width: 10),
         ChoiceChip(
-          label: const Text('Verified'),
+          label: Text(
+            'Verified',
+            style: TextStyle(
+              color: selectedChip == 'Verified' ? Colors.white : Colors.black,
+            ),
+          ),
           selected: selectedChip == 'Verified',
           selectedColor: Colors.green,
           onSelected: (bool isSelected) {

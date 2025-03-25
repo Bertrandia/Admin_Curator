@@ -44,6 +44,10 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
         ref.read(patronProvider.notifier).fetchPatron(widget.model!.patronRef!);
         ref.read(taskProvider.notifier).listenToComments(widget.model.taskRef);
       }
+
+
+      ref.read(curatorBillProvider.notifier).fetchBills(taskRef: widget.model.taskDocRef!);
+
     });
   }
 
@@ -53,6 +57,12 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
     final authState = ref.watch(authNotifierProvider);
     final profileState = ref.watch(profileProvider);
     final comment = ref.watch(commentController);
+
+    final tasksNotifier = ref.read(taskProvider.notifier);
+    final curatorBillState = ref.watch(curatorBillProvider);
+
+    print('Curator Bill State: ${curatorBillState.curatorBills.length}');
+
     print('User Profile is empty : ${profileState.singleProfile?.fullName}');
     final taskState = ref.watch(taskProvider);
     if (profileState.profile.isEmpty) {
@@ -306,6 +316,16 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                     'No price assigned ',
                               ),
                               const SizedBox(height: 16),
+
+                              DetailRow(
+                                label: 'Task Final Price :',
+                                value:
+                                    taskState.selectedTask?.taskPriceByAdmin
+                                        .toString() ??
+                                    'No price assigned ',
+                              ),
+                              const SizedBox(height: 16),
+
                               // Slot and Priority
                               DetailRow(
                                 label: 'Slot :',
@@ -612,6 +632,58 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                         ),
                                                     child: IconButton(
                                                       onPressed: () async {
+
+                                                        if (comment
+                                                            .text
+                                                            .isNotEmpty) {
+                                                          final Comment
+                                                          commentModel = Comment(
+                                                            commentText:
+                                                                comment.text
+                                                                    .trim(),
+                                                            timeStamp:
+                                                                Timestamp.now(),
+                                                            commentOwnerRef:
+                                                                authState
+                                                                    .user!
+                                                                    .documentReference,
+                                                            commentOwnerName:
+                                                                authState
+                                                                    .user!
+                                                                    .displayName,
+                                                            taskRef:
+                                                                taskState
+                                                                    .selectedTask!
+                                                                    .taskDocRef,
+                                                            commentOwnerImg:
+                                                                authState
+                                                                    .user!
+                                                                    .photoUrl,
+
+                                                            commentDate:
+                                                                Timestamp.now(),
+                                                            likedBy: [],
+                                                            likedByRef: [],
+                                                            totalLikes: 0,
+                                                            taskStatusCategory:
+                                                                taskState
+                                                                    .selectedTask!
+                                                                    .taskStatusCategory,
+                                                          );
+                                                          final success = await tasksNotifier
+                                                              .addCommentToTask(
+                                                                taskId:
+                                                                    taskState
+                                                                        .selectedTask!
+                                                                        .taskID,
+                                                                comment:
+                                                                    commentModel,
+                                                              );
+                                                          if (success) {
+                                                            comment.clear();
+                                                          }
+                                                        }
+
                                                         ScaffoldMessenger.of(
                                                           context,
                                                         ).showSnackBar(
@@ -642,6 +714,52 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                             ),
                           ),
                           SizedBox(height: 10),
+
+                          Container(
+                            height: 500,
+                            width: 400,
+                            child: ListView.builder(
+                            itemCount: curatorBillState.curatorBills.length,
+                            itemBuilder: (context, index){
+                              return Padding(
+                                padding: const EdgeInsets.all(40.0),
+                                child: Container(
+                                  height: MediaQuery.of(context).size.height * 0.3,
+                                  child: Column(
+                                    children: [
+                                      Image.network(curatorBillState.curatorBills[index].docUrl),
+                                      Row(
+                                        children: [
+                                          Text(curatorBillState.curatorBills[index].invoiceNumber),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(curatorBillState.curatorBills[index].invoiceDescription),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(curatorBillState.curatorBills[index].totalAmount.toString()),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(curatorBillState.curatorBills[index].status),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          
+                                        ],
+                                      ),                            
+                                    ],
+                                  ),
+                                ),
+                              );
+                            })),
+                          SizedBox(height: 10),
+
                           ElevatedButton(
                             onPressed: () {
                               FirebaseFirestore.instance
