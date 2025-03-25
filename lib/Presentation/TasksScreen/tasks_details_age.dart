@@ -45,7 +45,9 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
         ref.read(taskProvider.notifier).listenToComments(widget.model.taskRef);
       }
 
+
       ref.read(curatorBillProvider.notifier).fetchBills(taskRef: widget.model.taskDocRef!);
+
     });
   }
 
@@ -55,10 +57,12 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
     final authState = ref.watch(authNotifierProvider);
     final profileState = ref.watch(profileProvider);
     final comment = ref.watch(commentController);
+
     final tasksNotifier = ref.read(taskProvider.notifier);
     final curatorBillState = ref.watch(curatorBillProvider);
 
     print('Curator Bill State: ${curatorBillState.curatorBills.length}');
+
     print('User Profile is empty : ${profileState.singleProfile?.fullName}');
     final taskState = ref.watch(taskProvider);
     if (profileState.profile.isEmpty) {
@@ -312,6 +316,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                     'No price assigned ',
                               ),
                               const SizedBox(height: 16),
+
                               DetailRow(
                                 label: 'Task Final Price :',
                                 value:
@@ -320,6 +325,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                     'No price assigned ',
                               ),
                               const SizedBox(height: 16),
+
                               // Slot and Priority
                               DetailRow(
                                 label: 'Slot :',
@@ -626,6 +632,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                         ),
                                                     child: IconButton(
                                                       onPressed: () async {
+
                                                         if (comment
                                                             .text
                                                             .isNotEmpty) {
@@ -676,6 +683,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                             comment.clear();
                                                           }
                                                         }
+
                                                         ScaffoldMessenger.of(
                                                           context,
                                                         ).showSnackBar(
@@ -706,6 +714,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                             ),
                           ),
                           SizedBox(height: 10),
+
                           Container(
                             height: 500,
                             width: 400,
@@ -750,6 +759,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                               );
                             })),
                           SizedBox(height: 10),
+
                           ElevatedButton(
                             onPressed: () {
                               FirebaseFirestore.instance

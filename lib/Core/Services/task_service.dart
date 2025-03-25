@@ -31,7 +31,6 @@ class TasksService {
         });
   }
 
-  
 
   Future<TaskModel?> taskPriceAndTime({
     required String taskId,
@@ -47,6 +46,7 @@ class TasksService {
       'taskPriceByAdmin': taskPriceByAdmin,
       'taskDurationByAdmin': taskDurationByAdmin,
       'isAdminApproved': isAdminApproved,
+
     });
     await batch.commit();
     DocumentSnapshot updatedTaskSnap = await taskRef.get();
@@ -70,6 +70,7 @@ class TasksService {
       'curatorTaskStatus': 'Pending',
       'isTaskAssignedToCurator': true,
       'taskAcceptedTimeByCurator': Timestamp.now(),
+
     });
     await batch.commit();
     DocumentSnapshot updatedTaskSnap = await taskRef.get();
@@ -78,6 +79,31 @@ class TasksService {
     }
     return null;
   }
+
+
+  Future<TaskModel?> updateCurator({
+    required String taskId,
+
+    required String curatorID,
+  }) async {
+    DocumentReference taskRef = _firestore
+        .collection(FirebaseCollections.createTaskCollection)
+        .doc(taskId);
+    WriteBatch batch = _firestore.batch();
+    batch.update(taskRef, {
+      'taskAssignedToCurator': curatorID,
+      'curatorTaskStatus': 'Pending',
+      'isTaskAssignedToCurator': true,
+      'taskAcceptedTimeByCurator': Timestamp.now(),
+    });
+    await batch.commit();
+    DocumentSnapshot updatedTaskSnap = await taskRef.get();
+    if (updatedTaskSnap.exists) {
+      return TaskModel.fromFirestore(updatedTaskSnap);
+    }
+    return null;
+  }
+
 
   Future<void> addCommentToTask({
     required String taskId,

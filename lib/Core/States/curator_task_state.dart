@@ -10,7 +10,9 @@ class TaskState {
   final bool isLoading;
   final String errorMessage;
   final List<Comment> comments;
+
   final List<CuratorBill> curatorBills;
+
 
   TaskState({
     this.selectedTask,
@@ -18,7 +20,9 @@ class TaskState {
     this.isLoading = false,
     this.errorMessage = '',
     this.comments = const [],
+
     this.curatorBills = const [],
+
   });
 
   TaskState copyWith({
@@ -27,7 +31,9 @@ class TaskState {
     String? errorMessage,
     TaskModel? selectedTask,
     List<Comment>? comments,
+
     List<CuratorBill>? curatorBills,
+
   }) {
     return TaskState(
       listOfTasks: tasks ?? this.listOfTasks,
@@ -35,7 +41,9 @@ class TaskState {
       errorMessage: errorMessage ?? this.errorMessage,
       selectedTask: selectedTask ?? this.selectedTask,
       comments: comments ?? this.comments,
+
       curatorBills: curatorBills ?? this.curatorBills,
+
     );
   }
 }

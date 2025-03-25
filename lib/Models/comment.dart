@@ -4,9 +4,15 @@ class Comment {
   final String? commentRef;
   final String commentText;
   final Timestamp timeStamp;
+
   final DocumentReference<Object?>? commentOwnerRef;
   final String commentOwnerName;
   final DocumentReference<Object?>? taskRef;
+
+  final DocumentReference commentOwnerRef;
+  final String commentOwnerName;
+  final DocumentReference taskRef;
+
   final String commentOwnerImg;
   final Timestamp commentDate;
   final List<String> likedBy;
@@ -18,9 +24,15 @@ class Comment {
     this.commentRef,
     required this.commentText,
     required this.timeStamp,
+
     this.commentOwnerRef,
     required this.commentOwnerName,
     this.taskRef,
+
+    required this.commentOwnerRef,
+    required this.commentOwnerName,
+    required this.taskRef,
+
     required this.commentOwnerImg,
     required this.commentDate,
     required this.likedBy,
@@ -35,9 +47,15 @@ class Comment {
       commentRef: doc.id,
       commentText: json['comment_text'] ?? '',
       timeStamp: json['timeStamp'] ?? Timestamp.now(),
+
       commentOwnerRef: json['comment_owner_ref'] as DocumentReference<Object?>?,
       commentOwnerName: json['comment_owner_name'] ?? '',
       taskRef: json['taskRef']  as DocumentReference<Object?>?,
+
+      commentOwnerRef: json['comment_owner_ref'],
+      commentOwnerName: json['comment_owner_name'] ?? '',
+      taskRef: json['taskRef'],
+
       commentOwnerImg: json['comment_owner_img'] ?? '',
       commentDate: json['commentDate'] ?? Timestamp.now(),
       likedBy: List<String>.from(json['likedBy'] ?? []),

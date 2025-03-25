@@ -1,4 +1,6 @@
+
 import 'package:admin_curator/Presentation/Dashboard/Widgets/custom_SearchableDD.dart';
+
 import 'package:admin_curator/Providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,6 +57,7 @@ class _AssignPriceDialogState extends ConsumerState<AssignPriceDialog> {
       child: Container(
         color: Colors.white70,
         padding: const EdgeInsets.all(20),
+
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -145,6 +148,95 @@ class _AssignPriceDialogState extends ConsumerState<AssignPriceDialog> {
               ),
             ],
           ),
+
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Task Details', style: _headerStyle()),
+            const SizedBox(height: 12),
+            _buildLabel('Subject:', widget.taskSubject),
+            _buildLabel('Description:', widget.taskDescription),
+            _buildLabel('Time Slot:', widget.timeSlot),
+            _buildLabel('Time Mode:', widget.taskMode),
+            const SizedBox(height: 20),
+
+            Text(
+              'Task Hours: ${taskHours.toStringAsFixed(1)} hours',
+              style: _textStyle(),
+            ),
+            Slider(
+              value: taskHours,
+              min: 0.0,
+              max: 8.0,
+              divisions: 16,
+              activeColor: AppColors.primary,
+              inactiveColor: Colors.deepOrange.shade100,
+              label: '${taskHours.toStringAsFixed(1)} hours',
+              onChanged: (value) => setState(() => taskHours = value),
+            ),
+            const SizedBox(height: 12),
+
+            Text(
+              'Task Price: ${currencyFormat.format(taskPrice)}',
+              style: _textStyle(),
+            ),
+            Slider(
+              value: taskPrice,
+              min: 0,
+              max: 4000,
+              divisions: 40,
+              activeColor: AppColors.primary,
+              inactiveColor: Colors.deepOrange.shade100,
+              label: currencyFormat.format(taskPrice),
+              onChanged: (value) => setState(() => taskPrice = value),
+            ),
+            const SizedBox(height: 20),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Cancel', style: _buttonTextStyle()),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    ref.read(taskHoursProvider.notifier).state = taskHours;
+                    ref.read(taskPriceProvider.notifier).state = taskPrice;
+                    await ref
+                        .read(taskProvider.notifier)
+                        .taskPriceAndTime(
+                          taskDurationByAdmin: taskHours,
+                          taskPriceByAdmin: taskPrice,
+                          taskId: widget.taskId,
+                          isAdminApproved: true,
+                        )
+                        .then((val) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Price & Time Updated!"),
+                            ),
+                          );
+                          Navigator.pop(context);
+                        });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: Text('Save Changes', style: _buttonTextStyle()),
+                ),
+              ],
+            ),
+          ],
+
         ),
       ),
     );
