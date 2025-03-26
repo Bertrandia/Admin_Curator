@@ -4,6 +4,7 @@ import 'package:admin_curator/Presentation/Widgets/global_btn.dart';
 import 'package:admin_curator/Providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileDetailsPage extends ConsumerWidget {
   final CuratorModel curatorModel;
@@ -87,30 +88,50 @@ class ProfileDetailsPage extends ConsumerWidget {
             ],
           ),
           SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.grey[300], // Optional: Background color
-              child: ClipOval(
-                child: Image.network(
-                  curatorModel.profile!.profileImage ??
-                      'https://via.placeholder.com/150',
-                  width: 120,
-                  height: 120,
-                  fit:
-                      BoxFit
-                          .cover, // Ensures the image fills the circle without stretching
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(
-                      Icons.person,
-                      size: 60,
-                      color: Colors.grey[600],
+          Row(
+            spacing: 10,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundColor:
+                      Colors.grey[300], // Optional: Background color
+                  child: ClipOval(
+                    child: Image.network(
+                      curatorModel.profile!.profileImage ??
+                          'https://via.placeholder.com/150',
+                      width: 120,
+                      height: 120,
+                      fit:
+                          BoxFit
+                              .cover, // Ensures the image fills the circle without stretching
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.person,
+                          size: 60,
+                          color: Colors.grey[600],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              Visibility(
+                visible:
+                    curatorModel.profile?.curatorAgreementUrl != '' ||
+                    curatorModel.profile?.curatorAgreementUrl != null,
+                child: GlobalButton(
+                  text: 'View Agreement',
+                  onPressed: () async {
+                    await openUrlInNewTab(
+                      curatorModel.profile!.curatorAgreementUrl,
                     );
                   },
                 ),
               ),
-            ),
+            ],
           ),
 
           SizedBox(height: 10),
@@ -131,11 +152,26 @@ class ProfileDetailsPage extends ConsumerWidget {
 
           // Location
           sectionHeader('Bank Details', false),
-          personalInfoRow('Bank Name:', 'NA'),
-          personalInfoRow('Account Holder Name:', 'NA'),
-          personalInfoRow('Account Number:', 'NA'),
-          personalInfoRow('Account Type:', 'NA'),
-          personalInfoRow('IFSC code:', 'NA'),
+          personalInfoRow(
+            'Bank Name:',
+            curatorModel.profile?.bankAccountDetails?.bankName ?? 'NA',
+          ),
+          personalInfoRow(
+            'Account Holder Name:',
+            curatorModel.profile?.bankAccountDetails?.accountHolderName ?? 'NA',
+          ),
+          personalInfoRow(
+            'Account Number:',
+            curatorModel.profile?.bankAccountDetails?.accountNumber ?? 'NA',
+          ),
+          personalInfoRow(
+            'Account Type:',
+            curatorModel.profile?.bankAccountDetails?.accountType ?? 'NA',
+          ),
+          personalInfoRow(
+            'IFSC code:',
+            curatorModel.profile?.bankAccountDetails?.ifscCode ?? 'NA',
+          ),
           SizedBox(height: 20),
           sectionHeader("Location:", false),
           personalInfoRow(
@@ -257,5 +293,14 @@ class ProfileDetailsPage extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> openUrlInNewTab(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

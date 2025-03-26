@@ -6,7 +6,7 @@ class CuratorBillService {
 
   // Stream<CuratorBill?> getCuratorBillByTaskRef(String taskRef) {
   //   return _firestore
-  //       .collection('CuratorInvoice') 
+  //       .collection('CuratorInvoice')
   //       .where('taskRef', isEqualTo: taskRef)
   //       .snapshots()
   //       .map((querySnapshot) {
@@ -29,18 +29,37 @@ class CuratorBillService {
   //       });
   // }
 
-  Stream<List<CuratorBill>> getCuratorBillsByTaskRef(DocumentReference taskRef) {
-  return _firestore
-      .collection('CuratorInvoice') // Replace with your actual Firestore collection name
-      .where('taskRef', isEqualTo: taskRef)
-      .snapshots()
-      .map((querySnapshot) {
-        if (querySnapshot.docs.isEmpty) {
-          return []; // Return an empty list if no documents exist
-        }
-        return querySnapshot.docs.map((doc) {
-          return CuratorBill.fromFirestore(doc);
-        }).toList();
-      });
-}
+  Stream<List<CuratorBill>> getCuratorBillsByTaskRef(
+    DocumentReference taskRef,
+  ) {
+    return _firestore
+        .collection(
+          'CuratorInvoice',
+        ) // Replace with your actual Firestore collection name
+        .where('taskRef', isEqualTo: taskRef)
+        .limit(1)
+        .snapshots()
+        .map((querySnapshot) {
+          if (querySnapshot.docs.isEmpty) {
+            print('Document is empty');
+            return []; // Return an empty list if no documents exist
+          }
+          return querySnapshot.docs.map((doc) {
+            return CuratorBill.fromFirestore(doc);
+          }).toList();
+        });
+  }
+
+  //
+  // Stream<CuratorBill?> getCuratorBillByTaskRef(DocumentReference taskRef) {
+  //   return _firestore
+  //       .collection('CuratorInvoice')
+  //       .where('taskRef', isEqualTo: taskRef)
+  //       .limit(1)
+  //       .snapshots()
+  //       .map((querySnapshot) {
+  //     if (querySnapshot.docs.isEmpty) return null; // No document found
+  //     return CuratorBill.fromFirestore(querySnapshot.docs.first);
+  //   });
+  // }
 }

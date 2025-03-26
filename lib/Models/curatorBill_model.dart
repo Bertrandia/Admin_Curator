@@ -11,7 +11,7 @@ class CuratorBill {
   bool isLMApproved;
   String reasonOfRejection;
   String status;
-  String taskRef;
+  DocumentReference? taskRef;
   int totalAmount;
 
   CuratorBill({
@@ -34,7 +34,10 @@ class CuratorBill {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
     return CuratorBill(
-      curatorRef: data['curatorRef'] as DocumentReference?,
+      curatorRef:
+          data['curatorRef'] != null
+              ? data['curatorRef'] as DocumentReference
+              : null,
       docUrl: data['docUrl'] ?? '',
       invoiceDescription: data['invoiceDescription'] ?? '',
       invoiceNumber: data['invoiceNumber'] ?? '',
@@ -44,7 +47,8 @@ class CuratorBill {
       isLMApproved: data['isLMApproved'] ?? false,
       reasonOfRejection: data['reasonOfRejection'] ?? '',
       status: data['status'] ?? 'Pending',
-      taskRef: data['taskRef'] ?? '',
+      taskRef:
+          data['taskRef'] != null ? data['taskRef'] as DocumentReference : null,
       totalAmount: (data['totalAmount'] ?? 0).toInt(),
     );
   }

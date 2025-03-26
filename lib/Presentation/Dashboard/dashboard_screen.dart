@@ -157,7 +157,6 @@ class DashboardScreen extends ConsumerWidget {
 
           const SizedBox(height: 16),
 
-
           Align(
             alignment: Alignment.centerLeft,
             child: SizedBox(
@@ -183,25 +182,24 @@ class DashboardScreen extends ConsumerWidget {
               // ),
               child: SearchableDropdown(),
 
-              child: DropdownButton(
-                dropdownColor: AppColors.white,
-
-                borderRadius: BorderRadius.circular(20),
-                isExpanded: false,
-                value: selectedCurator,
-                hint: Text('Select Curator'),
-                items:
-                    profileState.profile.map((value) {
-                      return DropdownMenuItem(
-                        child: Text(value.fullName),
-                        value: value.id,
-                      );
-                    }).toList(),
-                onChanged: (value) {
-                  ref.read(selectedCuratorProvider.notifier).state = value;
-                },
-              ),
-
+              // child: DropdownButton(
+              //   dropdownColor: AppColors.white,
+              //
+              //   borderRadius: BorderRadius.circular(20),
+              //   isExpanded: false,
+              //   value: selectedCurator,
+              //   hint: Text('Select Curator'),
+              //   items:
+              //       profileState.profile.map((value) {
+              //         return DropdownMenuItem(
+              //           child: Text(value.fullName),
+              //           value: value.id,
+              //         );
+              //       }).toList(),
+              //   onChanged: (value) {
+              //     ref.read(selectedCuratorProvider.notifier).state = value;
+              //   },
+              // ),
             ),
           ),
           SizedBox(height: 20),

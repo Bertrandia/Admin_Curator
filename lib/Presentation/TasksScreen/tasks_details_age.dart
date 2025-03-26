@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-
 import '../../Constants/app_styles.dart';
 import '../../Models/comment.dart';
 import '../../Providers/providers.dart';
@@ -34,9 +33,13 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
       ref.read(patronProvider.notifier).fetchPatron(widget.model.patronRef!);
       ref.read(taskProvider.notifier).getTaskById(id: widget.model.taskRef);
       if (widget.model.taskAssignedToCurator != null) {
+        final referenceProfile = FirebaseFirestore.instance
+            .collection('Consultants')
+            .doc(widget.model.taskAssignedToCurator);
+
         ref
             .read(profileProvider.notifier)
-            .getCuratorById(widget.model.taskAssignedToCurator!);
+            .getCuratorByReference(referenceProfile);
 
         // print("Profile by ID : ${profileState.singleProfile?.fullName}");
       }
@@ -44,10 +47,10 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
         ref.read(patronProvider.notifier).fetchPatron(widget.model!.patronRef!);
         ref.read(taskProvider.notifier).listenToComments(widget.model.taskRef);
       }
-
-
-      ref.read(curatorBillProvider.notifier).fetchBills(taskRef: widget.model.taskDocRef!);
-
+      print('Document Reference of Task${widget.model.taskDocRef}');
+      ref
+          .read(curatorBillProvider.notifier)
+          .fetchBills(taskRef: widget.model.taskDocRef!);
     });
   }
 
@@ -61,20 +64,20 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
     final tasksNotifier = ref.read(taskProvider.notifier);
     final curatorBillState = ref.watch(curatorBillProvider);
 
-    print('Curator Bill State: ${curatorBillState.curatorBills.length}');
+    print('Curator Bill State: ${curatorBillState.curatorBills}');
 
     print('User Profile is empty : ${profileState.singleProfile?.fullName}');
     final taskState = ref.watch(taskProvider);
-    if (profileState.profile.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      ); // Show loader while fetching
-    }
-    if (widget.model.taskAssignedToCurator != null) {
-      matchingProfile = profileState.profile.firstWhere(
-        (profile) => profile.id == widget.model.taskAssignedToCurator,
-      );
-    }
+    // if (profileState.profile.isEmpty) {
+    //   return const Center(
+    //     child: CircularProgressIndicator(),
+    //   ); // Show loader while fetching
+    // }
+    // if (widget.model.taskAssignedToCurator != null) {
+    //   matchingProfile = profileState.profile.firstWhere(
+    //     (profile) => profile.id == widget.model.taskAssignedToCurator,
+    //   );
+    // }
     final comments = ref.watch(taskProvider).comments;
     // if (matchingProfile == null) {
     //   return const Center(
@@ -405,19 +408,23 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                 children: [
                                   DetailRow(
                                     label: 'Curator Name: ',
-                                    value: matchingProfile?.fullName ?? "NA",
+                                    value:
+                                        profileState.singleProfile?.fullName ??
+                                        "NA",
                                   ),
                                   const SizedBox(height: 8),
                                   DetailRow(
                                     label: 'Curator Email :',
                                     value:
-                                        matchingProfile?.profile?.email ?? "NA",
+                                        profileState.singleProfile?.email ??
+                                        "NA",
                                   ),
                                   const SizedBox(height: 8),
                                   DetailRow(
                                     label: 'Contact Num :',
                                     value:
-                                        matchingProfile
+                                        profileState
+                                            .singleProfile
                                             ?.profile
                                             ?.contactNumber ??
                                         'Not Available',
@@ -632,7 +639,6 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                         ),
                                                     child: IconButton(
                                                       onPressed: () async {
-
                                                         if (comment
                                                             .text
                                                             .isNotEmpty) {
@@ -719,45 +725,66 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                             height: 500,
                             width: 400,
                             child: ListView.builder(
-                            itemCount: curatorBillState.curatorBills.length,
-                            itemBuilder: (context, index){
-                              return Padding(
-                                padding: const EdgeInsets.all(40.0),
-                                child: Container(
-                                  height: MediaQuery.of(context).size.height * 0.3,
-                                  child: Column(
-                                    children: [
-                                      Image.network(curatorBillState.curatorBills[index].docUrl),
-                                      Row(
-                                        children: [
-                                          Text(curatorBillState.curatorBills[index].invoiceNumber),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text(curatorBillState.curatorBills[index].invoiceDescription),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text(curatorBillState.curatorBills[index].totalAmount.toString()),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text(curatorBillState.curatorBills[index].status),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          
-                                        ],
-                                      ),                            
-                                    ],
+                              itemCount: curatorBillState.curatorBills.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(40.0),
+                                  child: Container(
+                                    height:
+                                        MediaQuery.of(context).size.height *
+                                        0.3,
+                                    child: Column(
+                                      children: [
+                                        Image.network(
+                                          curatorBillState
+                                              .curatorBills[index]
+                                              .docUrl,
+                                        ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              curatorBillState
+                                                  .curatorBills[index]
+                                                  .invoiceNumber,
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              curatorBillState
+                                                  .curatorBills[index]
+                                                  .invoiceDescription,
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              curatorBillState
+                                                  .curatorBills[index]
+                                                  .totalAmount
+                                                  .toString(),
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              curatorBillState
+                                                  .curatorBills[index]
+                                                  .status,
+                                            ),
+                                          ],
+                                        ),
+                                        Row(children: []),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              );
-                            })),
+                                );
+                              },
+                            ),
+                          ),
                           SizedBox(height: 10),
 
                           ElevatedButton(

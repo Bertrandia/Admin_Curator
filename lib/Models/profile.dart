@@ -120,6 +120,8 @@ class ProfileData {
   final DateTime updatedAt;
   final String aboutSelf;
   final bool isContractSigned;
+  final String curatorAgreementUrl;
+  final BankAccountDetails? bankAccountDetails;
 
   ProfileData({
     required this.aboutSelf,
@@ -149,6 +151,8 @@ class ProfileData {
     required this.createdAt,
     required this.updatedAt,
     required this.isContractSigned,
+    required this.curatorAgreementUrl,
+    this.bankAccountDetails,
   });
 
   /// Convert Model to Firestore Map
@@ -181,6 +185,7 @@ class ProfileData {
       'updatedAt': updatedAt.toIso8601String(),
       'aboutUrSelf': aboutSelf,
       'isContractSigned': isContractSigned,
+      'bankAccountDetails': bankAccountDetails?.toMap(),
     };
   }
 
@@ -226,6 +231,11 @@ class ProfileData {
       updatedAt: DateTime.parse(map['updatedAt'] as String),
       aboutSelf: map['aboutUrSelf'],
       isContractSigned: map['isContractSigned'] ?? false,
+      curatorAgreementUrl: map['curatorAgreementUrl'] ?? '',
+      bankAccountDetails:
+          map['bankAccountDetails'] != null
+              ? BankAccountDetails.fromMap(map['bankAccountDetails'])
+              : null,
     );
   }
 }
@@ -280,6 +290,46 @@ class ImagesWithTitle {
     return ImagesWithTitle(
       imageUrl: map['imageUrl'] ?? "",
       imageTitle: map['imageTitle'] ?? "",
+    );
+  }
+}
+
+class BankAccountDetails {
+  final String accountHolderName;
+  final String accountNumber;
+  final String accountType;
+  final String bankName;
+  final String branchName;
+  final String ifscCode;
+
+  BankAccountDetails({
+    required this.accountHolderName,
+    required this.accountNumber,
+    required this.accountType,
+    required this.bankName,
+    required this.branchName,
+    required this.ifscCode,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'accountHolderName': accountHolderName,
+      'accountNumber': accountNumber,
+      'accountType': accountType,
+      'bankName': bankName,
+      'branchName': branchName,
+      'ifscCode': ifscCode,
+    };
+  }
+
+  factory BankAccountDetails.fromMap(Map<String, dynamic> map) {
+    return BankAccountDetails(
+      accountHolderName: map['accountHolderName'] ?? '',
+      accountNumber: map['accountNumber'] ?? '',
+      accountType: map['accountType'] ?? '',
+      bankName: map['bankName'] ?? '',
+      branchName: map['branchName'] ?? '',
+      ifscCode: map['ifscCode'] ?? '',
     );
   }
 }
