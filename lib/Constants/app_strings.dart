@@ -20,8 +20,8 @@ class AppStrings {
   static const String uploadImage = "Choose a Profile Photo";
   static const String uImage = "Upload Photo";
   static const String submit = "Submit";
-  static const String conti= "Continue";
-  static const String next= "Next";
+  static const String conti = "Continue";
+  static const String next = "Next";
 
   //Images
   static const String gop = 'assets/images/peoples.png';
@@ -33,6 +33,8 @@ class AppStrings {
     "Space Planning",
     "Functional Design Sense",
     "Maintenance Knowledge",
-    "Adaptability"
+    "Adaptability",
   ];
 }
+
+const command = 'firebase deploy --only hosting:curator-admin';

@@ -5,4 +5,5 @@ class FirebaseCollections {
   static const String user = "user";
   static const String createTaskCollection = "createTaskCollection";
   static const String patronDetails = "addPatronDetails";
+  static const String curatorBill = 'CuratorInvoice';
 }

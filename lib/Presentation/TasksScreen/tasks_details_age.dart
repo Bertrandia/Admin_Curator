@@ -1,18 +1,21 @@
+import 'package:admin_curator/Constants/URls.dart';
 import 'package:admin_curator/Constants/app_colors.dart';
 import 'package:admin_curator/Models/model_tasks.dart';
 import 'package:admin_curator/Models/profile.dart';
 import 'package:admin_curator/Presentation/Widgets/custom_dropDown.dart';
+import 'package:admin_curator/Presentation/Widgets/global_btn.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-
 import '../../Constants/app_styles.dart';
 import '../../Models/comment.dart';
 import '../../Providers/providers.dart';
 import '../../Providers/textproviders.dart';
 import '../Widgets/asssign_pric_component.dart';
+import 'dart:html' as html;
 
 class TasksDetailsPAge extends ConsumerStatefulWidget {
   final TaskModel model;
@@ -34,9 +37,13 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
       ref.read(patronProvider.notifier).fetchPatron(widget.model.patronRef!);
       ref.read(taskProvider.notifier).getTaskById(id: widget.model.taskRef);
       if (widget.model.taskAssignedToCurator != null) {
+        final referenceProfile = FirebaseFirestore.instance
+            .collection('Consultants')
+            .doc(widget.model.taskAssignedToCurator);
+
         ref
             .read(profileProvider.notifier)
-            .getCuratorById(widget.model.taskAssignedToCurator!);
+            .getCuratorByReference(referenceProfile);
 
         // print("Profile by ID : ${profileState.singleProfile?.fullName}");
       }
@@ -44,6 +51,10 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
         ref.read(patronProvider.notifier).fetchPatron(widget.model!.patronRef!);
         ref.read(taskProvider.notifier).listenToComments(widget.model.taskRef);
       }
+      print('Document Reference of Task${widget.model.taskDocRef}');
+      ref
+          .read(curatorBillProvider.notifier)
+          .fetchBills(taskRef: widget.model.taskDocRef!);
     });
   }
 
@@ -53,28 +64,17 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
     final authState = ref.watch(authNotifierProvider);
     final profileState = ref.watch(profileProvider);
     final comment = ref.watch(commentController);
+
+    final curatorBillState = ref.watch(curatorBillProvider);
+
+    print('Curator Bill State: ${curatorBillState.curatorBills}');
+
     print('User Profile is empty : ${profileState.singleProfile?.fullName}');
     final taskState = ref.watch(taskProvider);
-    if (profileState.profile.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      ); // Show loader while fetching
-    }
-    if (widget.model.taskAssignedToCurator != null) {
-      matchingProfile = profileState.profile.firstWhere(
-        (profile) => profile.id == widget.model.taskAssignedToCurator,
-      );
-    }
+
     final comments = ref.watch(taskProvider).comments;
-    // if (matchingProfile == null) {
-    //   return const Center(
-    //     child: CircularProgressIndicator(),
-    //   ); // Show loader while searching
-    // }
-
-    // final userProfile = matchingProfiles.first;
-    // print('ID from state:${userProfile.id}');
-
+    final imageLength =
+        taskState.selectedTask?.listOfImagesUploadedByCurator.length ?? 0;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -166,246 +166,315 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                       // Task details
                       Expanded(
                         flex: 2,
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: AppColors.secondary,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Task Details',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      Spacer(),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          showAssignPriceDialog(
+                                            context,
+                                            ref,
+                                            taskState.selectedTask?.taskRef ??
+                                                '',
+                                            taskState
+                                                    .selectedTask
+                                                    ?.taskSubject ??
+                                                'No Subject Avialable',
+                                            taskState
+                                                    .selectedTask
+                                                    ?.taskDescription ??
+                                                'No Description Available',
+                                            taskState
+                                                    .selectedTask
+                                                    ?.assignedTimeSlot ??
+                                                'No Time Slot Available',
+                                            taskState
+                                                    .selectedTask
+                                                    ?.locationMode ??
+                                                'NA',
+                                            taskState
+                                                .selectedTask!
+                                                .taskPriceByAdmin,
+                                            taskState
+                                                .selectedTask
+                                                ?.taskDurationByAdmin,
+                                          );
+                                        },
+                                        child: Text('Assign Price'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.primary,
+                                          foregroundColor: AppColors.secondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Category pills
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary,
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          taskState
+                                                  .selectedTask
+                                                  ?.selectedHomeCuratorDepartment ??
+                                              'Not Available',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                      Spacer(),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Subject
+                                  DetailRow(
+                                    label: 'Subject :',
+                                    value:
+                                        taskState.selectedTask?.taskSubject ??
+                                        'No Subject Avialable',
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Description
+                                  DetailRow(
+                                    label: 'Description :',
+                                    value:
+                                        taskState
+                                            .selectedTask
+                                            ?.taskDescription ??
+                                        'No Description Available',
+                                    isMultiLine: true,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Dates
+                                  DetailRow(
+                                    label: 'Start Date :',
+                                    value: DateFormat('dd-MM-yy').format(
+                                      taskState.selectedTask!.taskStartTime
+                                          .toDate(),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DetailRow(
+                                    label: 'End Date :',
+                                    value: DateFormat('dd-MM-yy').format(
+                                      taskState.selectedTask!.taskEndTime
+                                          .toDate(),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Mode and Location
+                                  DetailRow(
+                                    label: 'Location Mode :',
+                                    value:
+                                        taskState.selectedTask?.locationMode ??
+                                        'NA',
+                                  ),
+                                  DetailRow(
+                                    label: 'Task Hours :',
+                                    value:
+                                        taskState
+                                            .selectedTask
+                                            ?.taskDurationByAdmin
+                                            .toString() ??
+                                        'NA',
+                                  ),
+
+                                  const SizedBox(height: 16),
+                                  // Price
+                                  DetailRow(
+                                    label: 'Price :',
+                                    value:
+                                        taskState.selectedTask?.taskPriceByAdmin
+                                            .toString() ??
+                                        'No price assigned ',
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  DetailRow(
+                                    label: 'Task Final Price :',
+                                    value:
+                                        taskState.selectedTask?.taskPriceByAdmin
+                                            .toString() ??
+                                        'No price assigned ',
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Slot and Priority
+                                  DetailRow(
+                                    label: 'Slot :',
+                                    value:
+                                        taskState
+                                            .selectedTask
+                                            ?.assignedTimeSlot ??
+                                        'NA',
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DetailRow(
+                                    label: 'Priority: ',
+                                    value: taskState.selectedTask!.priority,
+                                    color:
+                                        widget.model.priority == 'Low'
+                                            ? AppColors.black
+                                            : widget.model.priority == 'Medium'
+                                            ? AppColors.orange
+                                            : AppColors.red,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Lifestyle Manager
+                                  DetailRow(
+                                    label: 'LM:',
+                                    value:
+                                        taskState.selectedTask!.assignedLMName,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  // Patron Details
                                   Text(
-                                    'Task Details',
+                                    'Patron Details',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
+                                      color: Color(0xFFAA4400),
                                     ),
                                   ),
-                                  Spacer(),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      showAssignPriceDialog(
-                                        context,
-                                        ref,
-                                        taskState.selectedTask?.taskRef ?? '',
-                                        taskState.selectedTask?.taskSubject ??
-                                            'No Subject Avialable',
-                                        taskState
-                                                .selectedTask
-                                                ?.taskDescription ??
-                                            'No Description Available',
-                                        taskState
-                                                .selectedTask
-                                                ?.assignedTimeSlot ??
-                                            'No Time Slot Available',
-                                        taskState.selectedTask?.locationMode ??
-                                            'NA',
-                                        taskState
-                                            .selectedTask!
-                                            .taskPriceByAdmin,
-                                        taskState
-                                            .selectedTask
-                                            ?.taskDurationByAdmin,
-                                      );
-                                    },
-                                    child: Text('Assign Price'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      foregroundColor: AppColors.secondary,
+                                  const SizedBox(height: 16),
+                                  // Patron information
+                                  DetailRow(
+                                    label: 'Name :',
+                                    value: widget.model.patronName,
+                                  ),
+                                  const SizedBox(height: 8),
+
+                                  const SizedBox(height: 16),
+                                  // Address
+                                  DetailRow(
+                                    label: 'Address :',
+                                    value: widget.model.patronAddress,
+                                    isMultiLine: true,
+                                  ),
+
+                                  const SizedBox(height: 8),
+                                  DetailRow(
+                                    label: 'City :',
+                                    value: patronState.patron?.city ?? 'NA',
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DetailRow(
+                                    label: 'State :',
+                                    value: patronState.patron?.state ?? "NA",
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DetailRow(
+                                    label: 'Pincode :',
+                                    value:
+                                        patronState.patron?.addressLine2 ??
+                                        "NA",
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Curator Details',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFAA4400),
                                     ),
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Category pills
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      taskState
-                                              .selectedTask
-                                              ?.selectedHomeCuratorDepartment ??
-                                          'Not Available',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
+                                  SizedBox(height: 16),
+                                  Column(
+                                    children: [
+                                      DetailRow(
+                                        label: 'Curator Name: ',
+                                        value:
+                                            profileState
+                                                .singleProfile
+                                                ?.fullName ??
+                                            "NA",
                                       ),
-                                    ),
-                                  ),
-                                  Spacer(),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Subject
-                              DetailRow(
-                                label: 'Subject :',
-                                value:
-                                    taskState.selectedTask?.taskSubject ??
-                                    'No Subject Avialable',
-                              ),
-                              const SizedBox(height: 8),
-                              // Description
-                              DetailRow(
-                                label: 'Description :',
-                                value:
-                                    taskState.selectedTask?.taskDescription ??
-                                    'No Description Avialable',
-                                isMultiLine: true,
-                              ),
-                              const SizedBox(height: 16),
-                              // Dates
-                              DetailRow(
-                                label: 'Start Date :',
-                                value: DateFormat('dd-MM-yy').format(
-                                  taskState.selectedTask!.taskStartTime
-                                      .toDate(),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              DetailRow(
-                                label: 'End Date :',
-                                value: DateFormat('dd-MM-yy').format(
-                                  taskState.selectedTask!.taskEndTime.toDate(),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              // Mode and Location
-                              DetailRow(
-                                label: 'Location Mode :',
-                                value:
-                                    taskState.selectedTask?.locationMode ??
-                                    'NA',
-                              ),
-                              DetailRow(
-                                label: 'Task Hours :',
-                                value:
-                                    taskState.selectedTask?.taskDurationByAdmin
-                                        .toString() ??
-                                    'NA',
-                              ),
-
-                              const SizedBox(height: 16),
-                              // Price
-                              DetailRow(
-                                label: 'Price :',
-                                value:
-                                    taskState.selectedTask?.taskPriceByAdmin
-                                        .toString() ??
-                                    'No price assigned ',
-                              ),
-                              const SizedBox(height: 16),
-                              // Slot and Priority
-                              DetailRow(
-                                label: 'Slot :',
-                                value:
-                                    taskState.selectedTask?.assignedTimeSlot ??
-                                    'NA',
-                              ),
-                              const SizedBox(height: 8),
-                              DetailRow(
-                                label: 'Priority: ',
-                                value: taskState.selectedTask!.priority,
-                                color:
-                                    widget.model.priority == 'Low'
-                                        ? AppColors.black
-                                        : widget.model.priority == 'Medium'
-                                        ? AppColors.orange
-                                        : AppColors.red,
-                              ),
-                              const SizedBox(height: 16),
-                              // Lifestyle Manager
-                              DetailRow(
-                                label: 'LM:',
-                                value: taskState.selectedTask!.assignedLMName,
-                              ),
-                              const SizedBox(height: 24),
-                              // Patron Details
-                              Text(
-                                'Patron Details',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFAA4400),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              // Patron information
-                              DetailRow(
-                                label: 'Name :',
-                                value: widget.model.patronName,
-                              ),
-                              const SizedBox(height: 8),
-
-                              const SizedBox(height: 16),
-                              // Address
-                              DetailRow(
-                                label: 'Address :',
-                                value: widget.model.patronAddress,
-                                isMultiLine: true,
-                              ),
-
-                              const SizedBox(height: 8),
-                              DetailRow(
-                                label: 'City :',
-                                value: patronState.patron?.city ?? 'NA',
-                              ),
-                              const SizedBox(height: 8),
-                              DetailRow(
-                                label: 'State :',
-                                value: patronState.patron?.state ?? "NA",
-                              ),
-                              const SizedBox(height: 8),
-                              DetailRow(
-                                label: 'Pincode :',
-                                value: patronState.patron?.addressLine2 ?? "NA",
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Curator Details',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFAA4400),
-                                ),
-                              ),
-                              SizedBox(height: 16),
-                              Column(
-                                children: [
-                                  DetailRow(
-                                    label: 'Curator Name: ',
-                                    value: matchingProfile?.fullName ?? "NA",
-                                  ),
-                                  const SizedBox(height: 8),
-                                  DetailRow(
-                                    label: 'Curator Email :',
-                                    value:
-                                        matchingProfile?.profile?.email ?? "NA",
-                                  ),
-                                  const SizedBox(height: 8),
-                                  DetailRow(
-                                    label: 'Contact Num :',
-                                    value:
-                                        matchingProfile
-                                            ?.profile
-                                            ?.contactNumber ??
-                                        'Not Available',
+                                      const SizedBox(height: 8),
+                                      DetailRow(
+                                        label: 'Curator Email :',
+                                        value:
+                                            profileState.singleProfile?.email ??
+                                            "NA",
+                                      ),
+                                      const SizedBox(height: 8),
+                                      DetailRow(
+                                        label: 'Contact Num :',
+                                        value:
+                                            profileState
+                                                .singleProfile
+                                                ?.profile
+                                                ?.contactNumber ??
+                                            'Not Available',
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'Task Images',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFAA4400),
+                              ),
+                            ),
+                            const Text(
+                              ' Uploaded photos highlighting the tasks performed and the progress made will be shown below',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Wrap(
+                              spacing: 15,
+                              runSpacing: 3,
+                              children: [
+                                for (int i = 0; i < imageLength; i++)
+                                  _buildImagePreview(
+                                    taskState
+                                            .selectedTask
+                                            ?.listOfImagesUploadedByCurator[i] ??
+                                        '',
+                                  ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -612,6 +681,61 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                         ),
                                                     child: IconButton(
                                                       onPressed: () async {
+                                                        if (comment
+                                                            .text
+                                                            .isNotEmpty) {
+                                                          final Comment
+                                                          commentModel = Comment(
+                                                            commentText:
+                                                                comment.text
+                                                                    .trim(),
+                                                            timeStamp:
+                                                                Timestamp.now(),
+                                                            commentOwnerRef:
+                                                                authState
+                                                                    .user!
+                                                                    .documentReference,
+                                                            commentOwnerName:
+                                                                authState
+                                                                    .user!
+                                                                    .displayName,
+                                                            taskRef:
+                                                                taskState
+                                                                    .selectedTask!
+                                                                    .taskDocRef,
+                                                            commentOwnerImg:
+                                                                authState
+                                                                    .user!
+                                                                    .photoUrl,
+
+                                                            commentDate:
+                                                                Timestamp.now(),
+                                                            likedBy: [],
+                                                            likedByRef: [],
+                                                            totalLikes: 0,
+                                                            taskStatusCategory:
+                                                                taskState
+                                                                    .selectedTask!
+                                                                    .taskStatusCategory,
+                                                          );
+                                                          final success = await ref
+                                                              .read(
+                                                                taskProvider
+                                                                    .notifier,
+                                                              )
+                                                              .addCommentToTask(
+                                                                taskId:
+                                                                    taskState
+                                                                        .selectedTask!
+                                                                        .taskID,
+                                                                comment:
+                                                                    commentModel,
+                                                              );
+                                                          if (success) {
+                                                            comment.clear();
+                                                          }
+                                                        }
+
                                                         ScaffoldMessenger.of(
                                                           context,
                                                         ).showSnackBar(
@@ -642,6 +766,190 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                             ),
                           ),
                           SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(),
+                              Text(
+                                'Curator Bills',
+                                style: TextStyle(fontSize: 30),
+                              ),
+                              Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(100),
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            width: 400,
+                            height: 300,
+                            child: ListView.builder(
+                              itemCount: curatorBillState.curatorBills.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(40.0),
+                                  child: Card(
+                                    elevation: 4,
+                                    margin: const EdgeInsets.all(8),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Row(
+                                        children: [
+                                          const SizedBox(width: 16),
+
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Invoice Number: ${curatorBillState.curatorBills[index].invoiceNumber}',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  'Description: ${curatorBillState.curatorBills[index].invoiceDescription}',
+                                                  style: TextStyle(
+                                                    color: Colors.grey[700],
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  'Total Amount: \₹${curatorBillState.curatorBills[index].totalAmount.toStringAsFixed(2)}',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.green[700],
+                                                  ),
+                                                ),
+                                                Row(
+                                                  spacing: 5,
+                                                  children: [
+                                                    !(curatorBillState
+                                                                .curatorBills[index]
+                                                                .isAdminApproved ||
+                                                            curatorBillState
+                                                                .curatorBills[index]
+                                                                .isLMApproved)
+                                                        ? ElevatedButton(
+                                                          onPressed: () {
+                                                            ref
+                                                                .read(
+                                                                  curatorBillProvider
+                                                                      .notifier,
+                                                                )
+                                                                .updateBill(
+                                                                  isAdminApproved:
+                                                                      true,
+                                                                  billId:
+                                                                      curatorBillState
+                                                                          .curatorBills[index]
+                                                                          .billDocRef!,
+                                                                );
+                                                          },
+                                                          style: ElevatedButton.styleFrom(
+                                                            backgroundColor:
+                                                                AppColors
+                                                                    .primary,
+                                                            foregroundColor:
+                                                                AppColors
+                                                                    .secondary,
+                                                            elevation: 2,
+                                                          ),
+                                                          child: const Text(
+                                                            'Approve Bill',
+                                                          ),
+                                                        )
+                                                        : SizedBox(),
+                                                    !(curatorBillState
+                                                                .curatorBills[index]
+                                                                .status ==
+                                                            'Rejected')
+                                                        ? ElevatedButton(
+                                                          onPressed: () async {
+                                                            String?
+                                                            rejectionReason =
+                                                                await showRejectionDialog(
+                                                                  context,
+                                                                );
+                                                            ref
+                                                                .read(
+                                                                  curatorBillProvider
+                                                                      .notifier,
+                                                                )
+                                                                .updateRejectionBill(
+                                                                  isAdminApproved:
+                                                                      false,
+                                                                  rejectionReason:
+                                                                      rejectionReason ??
+                                                                      '',
+                                                                  billId:
+                                                                      curatorBillState
+                                                                          .curatorBills[index]
+                                                                          .billDocRef!,
+                                                                );
+                                                          },
+                                                          child: Text(
+                                                            'Reject Bill',
+                                                          ),
+                                                          style: ElevatedButton.styleFrom(
+                                                            backgroundColor:
+                                                                AppColors
+                                                                    .primary,
+                                                            foregroundColor:
+                                                                AppColors
+                                                                    .secondary,
+                                                            elevation: 2,
+                                                          ),
+                                                        )
+                                                        : Text(
+                                                          'Rejected',
+                                                          style: TextStyle(
+                                                            color:
+                                                                AppColors.red,
+                                                          ),
+                                                        ),
+                                                  ],
+                                                ),
+                                                SizedBox(height: 5),
+                                                ElevatedButton(
+                                                  onPressed: () async {
+                                                    URL().openUrlInNewTab(
+                                                      curatorBillState
+                                                          .curatorBills[index]
+                                                          .docUrl,
+                                                      '_name',
+                                                    );
+                                                  },
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                        backgroundColor:
+                                                            AppColors.primary,
+                                                        foregroundColor:
+                                                            AppColors.secondary,
+                                                        elevation: 2,
+                                                      ),
+                                                  child: Text('View Bill'),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(height: 10),
+
                           ElevatedButton(
                             onPressed: () {
                               FirebaseFirestore.instance
@@ -789,6 +1097,49 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
     );
   }
 
+  Future<String?> showRejectionDialog(BuildContext context) async {
+    TextEditingController reasonController = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Reject Bill"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Please enter the reason for rejection:"),
+              SizedBox(height: 10),
+              TextField(
+                controller: reasonController,
+                decoration: InputDecoration(
+                  hintText: "Enter reason...",
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed:
+                  () => Navigator.pop(context, null), // Close without reason
+              child: Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (reasonController.text.isNotEmpty) {
+                  Navigator.pop(context, reasonController.text);
+                }
+              },
+              child: Text("Submit"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void showAssignPriceDialog(
     BuildContext context,
     WidgetRef ref,
@@ -815,9 +1166,10 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
     );
   }
 
-  Widget _buildImagePreview(String Image) {
+  Widget _buildImagePreview(String image) {
     return Container(
-      height: 100,
+      height: 250,
+      width: 250,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -826,7 +1178,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          const Icon(Icons.image, color: Colors.grey, size: 36),
+          Image(image: NetworkImage(image), fit: BoxFit.cover),
           Positioned(
             top: 8,
             right: 8,

@@ -30,6 +30,7 @@ class UserModel {
   final String uid;
   final String volopayCardHolderName;
   final String volopayCardNumber;
+  final DocumentReference<Object?>? documentReference;
 
   UserModel({
     required this.city,
@@ -61,9 +62,10 @@ class UserModel {
     required this.uid,
     required this.volopayCardHolderName,
     required this.volopayCardNumber,
+    this.documentReference,
   });
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
+  factory UserModel.fromMap(Map<String, dynamic> map,  {DocumentReference<Object?>? docRef}) {
     return UserModel(
       city: map['city'] ?? '',
       //  createdTime:
@@ -95,6 +97,7 @@ class UserModel {
       uid: map['uid'] ?? '',
       volopayCardHolderName: map['volopayCardHolderName'] ?? '',
       volopayCardNumber: map['volopayCardNumber'] ?? '',
+      documentReference: docRef,
     );
   }
 
@@ -129,6 +132,7 @@ class UserModel {
       'uid': uid,
       'volopayCardHolderName': volopayCardHolderName,
       'volopayCardNumber': volopayCardNumber,
+      'documentReference': documentReference,
     };
   }
 }

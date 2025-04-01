@@ -87,6 +87,41 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
                       itemCount: curatorState.profile.length,
                     ),
                   ),
+                  // Expanded(
+                  //   child: GridView.builder(
+                  //     gridDelegate:
+                  //         const SliverGridDelegateWithFixedCrossAxisCount(
+                  //           crossAxisCount:
+                  //               2, // Adjust based on your layout preference
+                  //           crossAxisSpacing: 8.0,
+                  //           mainAxisSpacing: 8.0,
+                  //           childAspectRatio:
+                  //               0.75, // Adjust based on your UI needs
+                  //         ),
+                  //     itemCount: curatorState.profile.length,
+                  //     itemBuilder: (context, index) {
+                  //       final curatorProfile = curatorState.profile[index];
+                  //       return _buildCuratorCard(
+                  //         profile: curatorProfile,
+                  //         name: curatorProfile.fullName,
+                  //         title: curatorProfile.profile!.selectedSkills[0],
+                  //         email:
+                  //             curatorProfile.profile?.email ??
+                  //             'Email not available',
+                  //         imageUrl: curatorProfile.profile?.profileImage ?? '',
+                  //         specialties:
+                  //             curatorProfile.profile?.selectedSkills ?? [],
+                  //         location: curatorProfile.profile?.state ?? 'NA',
+                  //         rate: '\$1200 per session',
+                  //         availability:
+                  //             DateFormat(
+                  //               'dd/MM/yy',
+                  //             ).format(curatorProfile.createdAt).toString(),
+                  //         context: context,
+                  //       );
+                  //     },
+                  //   ),
+                  // ),
 
                   // const SizedBox(height: 16),
                   // _buildCuratorCard(

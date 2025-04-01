@@ -1,5 +1,6 @@
 import 'package:admin_curator/Constants/app_colors.dart';
 import 'package:admin_curator/Models/task_model.dart';
+import 'package:admin_curator/Presentation/Dashboard/Widgets/custom_SearchableDD.dart';
 import 'package:admin_curator/Presentation/Dashboard/Widgets/data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -160,24 +161,45 @@ class DashboardScreen extends ConsumerWidget {
             alignment: Alignment.centerLeft,
             child: SizedBox(
               width: 250,
-              child: DropdownButton(
-                dropdownColor: AppColors.white,
 
-                borderRadius: BorderRadius.circular(20),
-                isExpanded: false,
-                value: selectedCurator,
-                hint: Text('Select Curator'),
-                items:
-                    profileState.profile.map((value) {
-                      return DropdownMenuItem(
-                        child: Text(value.fullName),
-                        value: value.id,
-                      );
-                    }).toList(),
-                onChanged: (value) {
-                  ref.read(selectedCuratorProvider.notifier).state = value;
-                },
-              ),
+              // child: DropdownButton(
+              //   dropdownColor: AppColors.white,
+
+              //   borderRadius: BorderRadius.circular(20),
+              //   isExpanded: false,
+              //   value: selectedCurator,
+              //   hint: Text('Select Curator'),
+              //   items:
+              //       profileState.profile.map((value) {
+              //         return DropdownMenuItem(
+              //           child: Text(value.fullName),
+              //           value: value.id,
+              //         );
+              //       }).toList(),
+              //   onChanged: (value) {
+              //     ref.read(selectedCuratorProvider.notifier).state = value;
+              //   },
+              // ),
+              child: SearchableDropdown(),
+
+              // child: DropdownButton(
+              //   dropdownColor: AppColors.white,
+              //
+              //   borderRadius: BorderRadius.circular(20),
+              //   isExpanded: false,
+              //   value: selectedCurator,
+              //   hint: Text('Select Curator'),
+              //   items:
+              //       profileState.profile.map((value) {
+              //         return DropdownMenuItem(
+              //           child: Text(value.fullName),
+              //           value: value.id,
+              //         );
+              //       }).toList(),
+              //   onChanged: (value) {
+              //     ref.read(selectedCuratorProvider.notifier).state = value;
+              //   },
+              // ),
             ),
           ),
           SizedBox(height: 20),

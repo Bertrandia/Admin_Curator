@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:admin_curator/Core/Services/profile_service.dart';
 import 'package:admin_curator/Core/States/curator_profile_state.dart';
 import 'package:admin_curator/Models/profile.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProfileNotifier extends StateNotifier<ProfileState> {
@@ -22,6 +23,9 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     required String consultantId,
     required bool isVerified,
     required bool isRejected,
+    String? rejectionReason,
+    String? rejectedBy,
+    DateTime? rejectedAt,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: '');
     try {
@@ -29,6 +33,9 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         consultantId,
         isRejected: isRejected,
         isVerified: isVerified,
+        rejectionReason: rejectionReason,
+        rejectedBy: rejectedBy,
+        rejectedAt: rejectedAt,
       );
       if (user != null) {
         state = state.copyWith(isLoading: false, errorMessage: '');
@@ -47,6 +54,13 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       );
       return false;
     }
+  }
+
+  void getCuratorByReference(DocumentReference ref) {
+    _profileService.getCuratorByReference(ref).listen((curator) {
+      state = state.copyWith(singleProfile: curator);
+      print(state.singleProfile);
+    });
   }
 
   void getCuratorById(String doc) async {
