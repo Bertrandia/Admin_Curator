@@ -1,25 +1,62 @@
+import 'dart:html' as html;
+import 'package:admin_curator/Constants/URls.dart';
 import 'package:admin_curator/Models/profile.dart';
 import 'package:admin_curator/Presentation/CuratorProfiles/Widgets/rejectionRandomSheet.dart';
 import 'package:admin_curator/Presentation/Widgets/global_btn.dart';
 import 'package:admin_curator/Providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-class ProfileDetailsPage extends ConsumerWidget {
+class ProfileDetailsPage extends ConsumerStatefulWidget {
   final CuratorModel curatorModel;
   const ProfileDetailsPage({super.key, required this.curatorModel});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _ProfileDetailsPageState createState() => _ProfileDetailsPageState();
+}
+
+class _ProfileDetailsPageState extends ConsumerState<ProfileDetailsPage> {
+  /// 🔹 Fetch PDF from Firestore URL and convert it to Uint8List
+  // Future<void> _loadPdf() async {
+  //   if (widget.curatorModel.profile?.curatorAgreementUrl == null ||
+  //       widget.curatorModel.profile!.curatorAgreementUrl!.isEmpty) {
+  //     return;
+  //   }
+  //
+  //   setState(() => isLoading = true);
+  //
+  //   try {
+  //     final response = await http.get(
+  //       Uri.parse(widget.curatorModel.profile!.curatorAgreementUrl!),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       setState(() {
+  //         pdfBytes = response.bodyBytes as Uint8List?;
+  //         isLoading = false;
+  //       });
+  //     } else {
+  //       throw Exception("Failed to load PDF");
+  //     }
+  //   } catch (e) {
+  //     print("Error loading PDF: $e");
+  //     setState(() => isLoading = false);
+  //   }
+  // }
+
+  @override
+  Widget build(BuildContext context) {
     final profileNotifier = ref.read(profileProvider.notifier);
     final authState = ref.watch(authNotifierProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
-          if (curatorModel.isVerified == false)
+          if (widget.curatorModel.isVerified == false)
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -29,7 +66,7 @@ class ProfileDetailsPage extends ConsumerWidget {
                     text: "Accept",
                     onPressed: () async {
                       await profileNotifier.updateVerificationStatus(
-                        consultantId: curatorModel.id,
+                        consultantId: widget.curatorModel.id,
                         isVerified: true,
                         isRejected: false,
                       );
@@ -44,26 +81,15 @@ class ProfileDetailsPage extends ConsumerWidget {
                   width: 150,
                   child: GlobalButton(
                     text: "Reject",
-                    // onPressed: () async {
                     onPressed: () {
                       final String userEmail =
-                          authState.user!.email ??
-                          "Unknown User"; // Fetch logged-in user's email
-                      // showModalBottomSheet(
-                      //   context: context,
-                      //   isScrollControlled: true,
-                      //   builder:
-                      //       (context) => RejectionBottomSheet(
-                      //         consultantId: curatorModel.id,
-                      //         profileNotifier: profileNotifier,
-                      //         userEmail: userEmail,
-                      //       ),
-                      // );
+                          authState.user?.email ?? "Unknown User";
+
                       showDialog(
                         context: context,
                         builder:
                             (context) => RejectionDialog(
-                              consultantId: curatorModel.id,
+                              consultantId: widget.curatorModel.id,
                               profileNotifier: profileNotifier,
                               userEmail: userEmail,
                             ),
@@ -74,160 +100,128 @@ class ProfileDetailsPage extends ConsumerWidget {
                 ),
               ],
             ),
-          // Personal Information
           Row(
             children: [
               InkWell(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Icon(Icons.arrow_back_ios),
+                onTap: () => Navigator.pop(context),
+                child: const Icon(Icons.arrow_back_ios),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               sectionHeader("Personal Information", true),
             ],
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Row(
-            spacing: 10,
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: CircleAvatar(
-                  radius: 60,
-                  backgroundColor:
-                      Colors.grey[300], // Optional: Background color
-                  child: ClipOval(
-                    child: Image.network(
-                      curatorModel.profile!.profileImage ??
-                          'https://via.placeholder.com/150',
-                      width: 120,
-                      height: 120,
-                      fit:
-                          BoxFit
-                              .cover, // Ensures the image fills the circle without stretching
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.person,
-                          size: 60,
-                          color: Colors.grey[600],
-                        );
-                      },
-                    ),
+              CircleAvatar(
+                radius: 60,
+                backgroundColor: Colors.grey[300],
+                child: ClipOval(
+                  child: Image.network(
+                    widget.curatorModel.profile!.profileImage ??
+                        'https://via.placeholder.com/150',
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.person,
+                        size: 60,
+                        color: Colors.grey[600],
+                      );
+                    },
                   ),
                 ),
               ),
-              Visibility(
-                visible:
-                    curatorModel.profile?.curatorAgreementUrl != '' ||
-                    curatorModel.profile?.curatorAgreementUrl != null,
-                child: GlobalButton(
-                  text: 'View Agreement',
+              const SizedBox(width: 10),
+              if (widget.curatorModel.profile?.curatorAgreementUrl != null &&
+                  widget.curatorModel.profile!.curatorAgreementUrl!.isNotEmpty)
+                GlobalButton(
+                  text: "View Agreement",
                   onPressed: () async {
-                    await openUrlInNewTab(
-                      curatorModel.profile!.curatorAgreementUrl,
+                    URL().openUrlInNewTab(
+                      widget.curatorModel.profile!.curatorAgreementUrl,
+                      '_blank',
                     );
+                    // await _loadPdf();
+                    // if (pdfBytes != null) {
+                    //   Navigator.of(context).push(
+                    //     MaterialPageRoute(
+                    //       builder:
+                    //           (context) => WebPdfViewer(
+                    //             pdfBytes: pdfBytes,
+                    //             fileName: "Curator_Agreement.pdf",
+                    //           ),
+                    //     ),
+                    //   );
+                    // }
                   },
                 ),
-              ),
             ],
           ),
-
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           personalInfoRow(
             "Full Name",
-            '${curatorModel.profile!.firstName} ${curatorModel.profile!.lastName}',
+            '${widget.curatorModel.profile!.firstName} ${widget.curatorModel.profile!.lastName}',
           ),
-          personalInfoRow("Nationality:", curatorModel.profile!.nationality),
-          personalInfoRow("Date of Birth:", curatorModel.profile!.dob),
-          personalInfoRow("Email ID:", curatorModel.profile!.email),
+          personalInfoRow(
+            "Nationality:",
+            widget.curatorModel.profile!.nationality,
+          ),
+          personalInfoRow("Date of Birth:", widget.curatorModel.profile!.dob),
+          personalInfoRow("Email ID:", widget.curatorModel.profile!.email),
           personalInfoRow(
             "Contact Number:",
-            curatorModel.profile!.contactNumber,
+            widget.curatorModel.profile!.contactNumber,
           ),
-          personalInfoRow("About:", curatorModel.profile!.aboutSelf),
+          personalInfoRow("About:", widget.curatorModel.profile!.aboutSelf),
 
           const SizedBox(height: 20),
 
-          // Location
           sectionHeader('Bank Details', false),
           personalInfoRow(
             'Bank Name:',
-            curatorModel.profile?.bankAccountDetails?.bankName ?? 'NA',
+            widget.curatorModel.profile?.bankAccountDetails?.bankName ?? 'NA',
           ),
           personalInfoRow(
             'Account Holder Name:',
-            curatorModel.profile?.bankAccountDetails?.accountHolderName ?? 'NA',
+            widget
+                    .curatorModel
+                    .profile
+                    ?.bankAccountDetails
+                    ?.accountHolderName ??
+                'NA',
           ),
           personalInfoRow(
             'Account Number:',
-            curatorModel.profile?.bankAccountDetails?.accountNumber ?? 'NA',
-          ),
-          personalInfoRow(
-            'Account Type:',
-            curatorModel.profile?.bankAccountDetails?.accountType ?? 'NA',
+            widget.curatorModel.profile?.bankAccountDetails?.accountNumber ??
+                'NA',
           ),
           personalInfoRow(
             'IFSC code:',
-            curatorModel.profile?.bankAccountDetails?.ifscCode ?? 'NA',
+            widget.curatorModel.profile?.bankAccountDetails?.ifscCode ?? 'NA',
           ),
-          SizedBox(height: 20),
-          sectionHeader("Location:", false),
+
+          const SizedBox(height: 20),
+          sectionHeader("Location", false),
           personalInfoRow(
             "Address",
-            "${curatorModel.profile!.addressLine1} ${curatorModel.profile!.addressLine2}",
+            "${widget.curatorModel.profile!.addressLine1} ${widget.curatorModel.profile!.addressLine2}",
           ),
-          personalInfoRow("District:", curatorModel.profile!.district),
-          personalInfoRow("State:", curatorModel.profile!.state),
-          personalInfoRow("Pincode:", curatorModel.profile!.pincode),
+          personalInfoRow("District:", widget.curatorModel.profile!.district),
+          personalInfoRow("State:", widget.curatorModel.profile!.state),
+          personalInfoRow("Pincode:", widget.curatorModel.profile!.pincode),
 
           const SizedBox(height: 20),
-
-          // Identification
-          sectionHeader("Identification", false),
-          personalInfoRow("Aadhaar Number:", curatorModel.profile!.aadhar),
-          personalInfoRow("PAN Number:", curatorModel.profile!.pan),
-
-          // infoText("📄 Goibibo Completion Certificate"),
-          // infoText("📄 Radhika Dua Resume.pdf"),
-          // infoText("📄 Letter of Recommendation - Steven Hick"),
-          const SizedBox(height: 20),
-
-          // Higher Education
           sectionHeader("Higher Education", false),
-          ...curatorModel.profile!.higherEducation.map(
+          ...widget.curatorModel.profile!.higherEducation.map(
             (edu) => personalInfoRow(edu.institute, edu.degree),
           ),
 
           const SizedBox(height: 20),
-
-          // Work Experience
           sectionHeader("Work Experience", false),
-          ...curatorModel.profile!.workExperience.map(
+          ...widget.curatorModel.profile!.workExperience.map(
             (work) => personalInfoRow(work.organization, work.role),
-          ),
-
-          personalInfoRow(
-            "Dept. of Interest:",
-            curatorModel.profile!.departmentInterested,
-          ),
-
-          const SizedBox(height: 20),
-
-          // Skills
-          sectionHeader("Skills", false),
-          ...curatorModel.profile!.selectedSkills.map(
-            (skill) => infoText("• $skill"),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Availability
-          sectionHeader("Availability", false),
-          personalInfoRow(
-            "Date of Availability",
-            curatorModel.profile!.dateOfAvailability,
           ),
         ],
       ),
@@ -293,14 +287,5 @@ class ProfileDetailsPage extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  Future<void> openUrlInNewTab(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      throw 'Could not launch $url';
-    }
   }
 }

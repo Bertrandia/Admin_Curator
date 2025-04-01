@@ -1,3 +1,4 @@
+import 'package:admin_curator/Constants/firebase_collections.dart';
 import 'package:admin_curator/Models/curatorBill_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -28,6 +29,39 @@ class CuratorBillService {
   //         }).toList();
   //       });
   // }
+
+  Future<CuratorBill?> updateBill(
+    bool isAdminApproved,
+    DocumentReference billId,
+  ) async {
+    WriteBatch batch = _firestore.batch();
+    batch.update(billId, {'isAdminApproved': isAdminApproved});
+    await batch.commit();
+    DocumentSnapshot updatedTaskSnap = await billId.get();
+    if (updatedTaskSnap.exists) {
+      return CuratorBill.fromFirestore(updatedTaskSnap);
+    }
+    return null;
+  }
+
+  Future<CuratorBill?> updateRejectionBill(
+    bool isAdminApproved,
+    String rejectionReason,
+    DocumentReference billId,
+  ) async {
+    WriteBatch batch = _firestore.batch();
+    batch.update(billId, {
+      'isAdminApproved': isAdminApproved,
+      'reasonOfRejection': rejectionReason,
+      'status': 'Rejected',
+    });
+    await batch.commit();
+    DocumentSnapshot updatedTaskSnap = await billId.get();
+    if (updatedTaskSnap.exists) {
+      return CuratorBill.fromFirestore(updatedTaskSnap);
+    }
+    return null;
+  }
 
   Stream<List<CuratorBill>> getCuratorBillsByTaskRef(
     DocumentReference taskRef,

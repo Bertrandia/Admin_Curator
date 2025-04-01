@@ -46,6 +46,7 @@ class TasksService {
       'taskDurationByAdmin': taskDurationByAdmin,
       'isAdminApproved': isAdminApproved,
     });
+
     await batch.commit();
     DocumentSnapshot updatedTaskSnap = await taskRef.get();
     if (updatedTaskSnap.exists) {

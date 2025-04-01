@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CuratorBill {
+  DocumentReference? billDocRef;
   DocumentReference? curatorRef;
   String docUrl;
   String invoiceDescription;
   String invoiceNumber;
   Timestamp invoiceSubmittedAt;
-  String invoiceSubmittedBy;
+  DocumentReference invoiceSubmittedBy;
   bool isAdminApproved;
   bool isLMApproved;
   String reasonOfRejection;
@@ -15,6 +16,7 @@ class CuratorBill {
   int totalAmount;
 
   CuratorBill({
+    this.billDocRef,
     this.curatorRef,
     required this.docUrl,
     required this.invoiceDescription,
@@ -34,6 +36,7 @@ class CuratorBill {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
     return CuratorBill(
+      billDocRef: doc.reference,
       curatorRef:
           data['curatorRef'] != null
               ? data['curatorRef'] as DocumentReference
