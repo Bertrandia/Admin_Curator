@@ -1,6 +1,7 @@
 import 'package:admin_curator/Core/Notifiers/auth_notifier.dart';
 import 'package:admin_curator/Core/Notifiers/curatorBill_notifier.dart';
 import 'package:admin_curator/Core/Notifiers/profile_notifier.dart';
+import 'package:admin_curator/Core/Notifiers/task_notifier.dart';
 import 'package:admin_curator/Core/Services/auth_service.dart';
 import 'package:admin_curator/Core/Services/curatorBill_service.dart';
 import 'package:admin_curator/Core/Services/profile_service.dart';
@@ -27,6 +28,15 @@ final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileState>(
 final taskProvider = StateNotifierProvider<CuratorTaskNotifier, TaskState>(
   (ref) => CuratorTaskNotifier(TasksService()),
 );
+
+final tasksServiceProvider = Provider<TasksService>((ref) {
+  return TasksService();  
+});
+
+final tasksNotifierProvider = StateNotifierProvider<TasksNotifier, TaskState>((ref) {
+  final tasksService = ref.watch(tasksServiceProvider); 
+  return TasksNotifier(tasksService);
+});
 
 final selectedChipProvider = StateProvider<String>((ref) => 'All');
 

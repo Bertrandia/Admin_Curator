@@ -28,6 +28,7 @@ class DashboardScreen extends ConsumerWidget {
     final taskList = ref.watch(taskProvider);
     final profileState = ref.watch(profileProvider);
     final selectedCurator = ref.watch(selectedCuratorProvider);
+    final tasksNotifier = ref.watch(tasksNotifierProvider.notifier);
     final int pendingTasks =
         taskList.listOfTasks
             .where((task) => task.curatorTaskStatus == 'Pending')
@@ -54,13 +55,36 @@ class DashboardScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
-          const Text(
-            'Task Dashboard',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFFBF4D28),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Task Dashboard',
+                style: TextStyle( 
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFBF4D28),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  try {
+                    await tasksNotifier.downloadTasksCSV();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('CSV download started')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  }
+                },
+                style: ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(AppColors.primary),
+                ),
+                child: Text('Tasks CSV',style: TextStyle(color:AppColors.white)),
+              ),
+            ],
           ),
 
           const SizedBox(height: 10),
