@@ -1,11 +1,8 @@
 import 'package:admin_curator/Constants/app_colors.dart';
 import 'package:admin_curator/Models/profile.dart';
-import 'package:admin_curator/Models/task_model.dart';
-import 'package:admin_curator/Presentation/Dashboard/Widgets/data_table.dart';
 import 'package:admin_curator/Providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import '../../Providers/providers.dart';
 
 class SearchableDropdown extends ConsumerStatefulWidget {
   @override
@@ -21,8 +18,12 @@ class _SearchableDropdownState extends ConsumerState<SearchableDropdown> {
   @override
   void initState() {
     super.initState();
-    final profileState = ref.read(profileProvider);
-    filteredProfiles = profileState.profile;
+
+    Future.microtask(() {
+      ref.read(profileProvider.notifier).fetchActiveCurators();
+      final profileState = ref.watch(profileProvider);
+      filteredProfiles = profileState.verifiedProfiles ?? [];
+    });
   }
 
   // void didChangeDependencies() {
@@ -43,18 +44,24 @@ class _SearchableDropdownState extends ConsumerState<SearchableDropdown> {
       _isDropdownOpen = !_isDropdownOpen;
       if (!_isDropdownOpen) {
         _searchController.clear();
-        final profileState = ref.read(profileProvider);
+        final profileState = ref.watch(profileProvider);
         filteredProfiles = profileState.profile;
       }
     });
   }
 
   void _filterItems(String query) {
-    final profileState = ref.read(profileProvider);
+    //   ref.read(profileProvider.notifier).fetchActiveCurators();
+    final profileState = ref.watch(profileProvider);
     setState(() {
-      filteredProfiles = profileState.profile
-          .where((profile) => profile.fullName.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      filteredProfiles =
+          profileState.profile
+              .where(
+                (profile) => profile.fullName.toLowerCase().contains(
+                  query.toLowerCase(),
+                ),
+              )
+              .toList();
     });
   }
 
@@ -66,6 +73,7 @@ class _SearchableDropdownState extends ConsumerState<SearchableDropdown> {
     });
     ref.read(selectedCuratorProvider.notifier).state = id;
   }
+
   void _clearSelection() {
     setState(() {
       selectedCurator = null;
@@ -87,18 +95,29 @@ class _SearchableDropdownState extends ConsumerState<SearchableDropdown> {
           child: InputDecorator(
             decoration: InputDecoration(
               hintText: 'Select Curator',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               // suffixIcon: Icon(_isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down),
-              suffixIcon: selectedCurator != null
-                  ? IconButton(
-                      icon: Icon(Icons.clear, color: Colors.grey),
-                      onPressed: _clearSelection,
-                    )
-                  : Icon(_isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down),
+              suffixIcon:
+                  selectedCurator != null
+                      ? IconButton(
+                        icon: Icon(Icons.clear, color: Colors.grey),
+                        onPressed: _clearSelection,
+                      )
+                      : Icon(
+                        _isDropdownOpen
+                            ? Icons.arrow_drop_up
+                            : Icons.arrow_drop_down,
+                      ),
             ),
-            child: Text(selectedCurator != null
-                ? profileState.profile.firstWhere((p) => p.id == selectedCurator).fullName
-                : 'Select Curator'),
+            child: Text(
+              selectedCurator != null
+                  ? profileState.profile
+                      .firstWhere((p) => p.id == selectedCurator)
+                      .fullName
+                  : 'Select Curator',
+            ),
           ),
         ),
         if (_isDropdownOpen)
@@ -118,21 +137,28 @@ class _SearchableDropdownState extends ConsumerState<SearchableDropdown> {
                   decoration: InputDecoration(
                     hintText: 'Search Curator',
                     prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
                 SizedBox(height: 8),
                 SizedBox(
                   height: 150,
-                  child: ListView.builder(
-                    itemCount: filteredProfiles.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(filteredProfiles[index].fullName),
-                        onTap: () => _selectItem(filteredProfiles[index].id),
-                      );
-                    },
-                  ),
+                  child:
+                      profileState.isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : ListView.builder(
+                            itemCount: filteredProfiles.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                title: Text(filteredProfiles[index].fullName),
+                                onTap:
+                                    () =>
+                                        _selectItem(filteredProfiles[index].id),
+                              );
+                            },
+                          ),
                 ),
               ],
             ),

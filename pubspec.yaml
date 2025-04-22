@@ -48,6 +48,10 @@ dependencies:
   download: ^1.0.1
   path_provider: ^2.1.5
   csv: ^6.0.0
+  pdf: ^3.11.3
+  printing: ^5.11.0
+  uuid: ^3.0.7
+
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +79,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/waves.svg
+    - assets/fonts/NotoSans-VariableFont_wdth-wght.ttf
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

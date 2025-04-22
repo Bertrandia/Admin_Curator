@@ -16,8 +16,33 @@ class CuratorProfilesList extends ConsumerStatefulWidget {
 
 class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Future.microtask(
+      () => ref.read(profileProvider.notifier).fetchVerifiedCurators(),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final curatorState = ref.watch(profileProvider);
+    final selectedChip = ref.watch(selectedChoicCuratorChipProvider);
+    //   final selectedChipProvider = ref.watch(selectedCuratorChipProvider);
+
+    if (curatorState.verifiedProfiles == null ||
+        curatorState.verifiedProfiles!.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final filteredList =
+        curatorState.verifiedProfiles
+            ?.where(
+              (profile) =>
+                  selectedChip == 'Active'
+                      ? profile.status == true
+                      : profile.status == false,
+            )
+            .toList();
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F0),
       body: Column(
@@ -52,7 +77,32 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
               ],
             ),
           ),
-
+          Wrap(
+            spacing: 8,
+            children:
+                ['Active', 'Deactive'].map((filter) {
+                  return FilterChip(
+                    label: Text(filter),
+                    selected: selectedChip == filter,
+                    selectedColor: const Color(0xFFF2A65A).withOpacity(0.3),
+                    checkmarkColor: const Color(0xFFBF4D28),
+                    backgroundColor: Colors.white,
+                    labelStyle: TextStyle(
+                      color:
+                          selectedChip == filter
+                              ? const Color(0xFFBF4D28)
+                              : Colors.black87,
+                    ),
+                    onSelected: (bool isSelected) {
+                      if (isSelected) {
+                        ref
+                            .read(selectedChoicCuratorChipProvider.notifier)
+                            .state = filter;
+                      }
+                    },
+                  );
+                }).toList(),
+          ),
           // Main content with scrolling
           Expanded(
             child: Padding(
@@ -63,11 +113,13 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
                   Expanded(
                     child: ListView.builder(
                       itemBuilder: (context, index) {
-                        final curatorProfile = curatorState.profile[index];
+                        final curatorProfile = filteredList![index];
                         return _buildCuratorCard(
                           profile: curatorProfile,
                           name: curatorProfile.fullName,
-                          title: curatorProfile.profile!.selectedSkills[0],
+                          title:
+                              curatorProfile.profile?.selectedSkills[0] ??
+                              'Skills',
                           email:
                               curatorProfile.profile?.email ??
                               'Email not available',
@@ -84,90 +136,9 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
                           context: context,
                         );
                       },
-                      itemCount: curatorState.profile.length,
+                      itemCount: filteredList?.length ?? 0,
                     ),
                   ),
-                  // Expanded(
-                  //   child: GridView.builder(
-                  //     gridDelegate:
-                  //         const SliverGridDelegateWithFixedCrossAxisCount(
-                  //           crossAxisCount:
-                  //               2, // Adjust based on your layout preference
-                  //           crossAxisSpacing: 8.0,
-                  //           mainAxisSpacing: 8.0,
-                  //           childAspectRatio:
-                  //               0.75, // Adjust based on your UI needs
-                  //         ),
-                  //     itemCount: curatorState.profile.length,
-                  //     itemBuilder: (context, index) {
-                  //       final curatorProfile = curatorState.profile[index];
-                  //       return _buildCuratorCard(
-                  //         profile: curatorProfile,
-                  //         name: curatorProfile.fullName,
-                  //         title: curatorProfile.profile!.selectedSkills[0],
-                  //         email:
-                  //             curatorProfile.profile?.email ??
-                  //             'Email not available',
-                  //         imageUrl: curatorProfile.profile?.profileImage ?? '',
-                  //         specialties:
-                  //             curatorProfile.profile?.selectedSkills ?? [],
-                  //         location: curatorProfile.profile?.state ?? 'NA',
-                  //         rate: '\$1200 per session',
-                  //         availability:
-                  //             DateFormat(
-                  //               'dd/MM/yy',
-                  //             ).format(curatorProfile.createdAt).toString(),
-                  //         context: context,
-                  //       );
-                  //     },
-                  //   ),
-                  // ),
-
-                  // const SizedBox(height: 16),
-                  // _buildCuratorCard(
-                  //   name: 'Priya Sharma',
-                  //   title: 'Professional Organizer',
-                  //   rating: 4.8,
-                  //   reviewCount: 115,
-                  //   imageUrl: 'assets/priya_profile.png',
-                  //   specialties: [
-                  //     'Full Home Organization',
-                  //     'Minimalist Design',
-                  //   ],
-                  //   location: 'Bangalore',
-                  //   rate: '\$950 per session',
-                  //   availability: 'Limited availability',
-                  //   context: context,
-                  // ),
-                  // const SizedBox(height: 16),
-                  // _buildCuratorCard(
-                  //   name: 'Vikram Singh',
-                  //   title: 'Space Optimization Expert',
-                  //   rating: 4.6,
-                  //   reviewCount: 87,
-                  //   imageUrl: 'assets/vikram_profile.png',
-                  //   specialties: [
-                  //     'Small Space Solutions',
-                  //     'Kitchen Organization',
-                  //   ],
-                  //   location: 'Hyderabad',
-                  //   rate: '\$1100 per session',
-                  //   availability: 'Available this weekend',
-                  //   context: context,
-                  // ),
-                  // const SizedBox(height: 16),
-                  // _buildCuratorCard(
-                  //   name: 'Neha Kapoor',
-                  //   title: 'Decluttering Specialist',
-                  //   rating: 4.9,
-                  //   reviewCount: 156,
-                  //   imageUrl: 'assets/neha_profile.png',
-                  //   specialties: ['Decluttering', 'Seasonal Wardrobes'],
-                  //   location: 'Chennai',
-                  //   rate: '\$1000 per session',
-                  //   availability: 'Available next week',
-                  //   context: context,
-                  // ),
                 ],
               ),
             ),

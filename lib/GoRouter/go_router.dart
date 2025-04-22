@@ -10,7 +10,7 @@ import 'package:admin_curator/Presentation/LoadingScreen/loading_screen.dart';
 import 'package:admin_curator/Presentation/MainLayout/main_layout.dart';
 import 'package:admin_curator/Presentation/TasksScreen/task_details_assign.dart';
 import 'package:admin_curator/Presentation/TasksScreen/tasks_details_age.dart';
-import 'package:admin_curator/Presentation/TasksScreen/tasks_screen.dart';
+import 'package:admin_curator/Presentation/TasksScreen/all_curator_verified_profiles.dart';
 import 'package:admin_curator/Providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

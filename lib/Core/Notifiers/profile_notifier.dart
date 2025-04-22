@@ -19,6 +19,48 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     });
   }
 
+  void fetchVerifiedCurators() async {
+    _profileService.getVerifiedCuratorsWithProfilesStream().listen((profiles) {
+      state = state.copyWith(isLoading: false, verifiedProfiles: profiles);
+    });
+  }
+
+  void fetchActiveCurators() async {
+    _profileService.getActiveCurators().listen((profiles) {
+      state = state.copyWith(isLoading: false, verifiedProfiles: profiles);
+    });
+  }
+
+  Future<bool> updateCuratorActiveDeactive({
+    required String curatorId,
+    required bool status,
+  }) async {
+    state = state.copyWith(isLoading: true, errorMessage: '');
+    try {
+      final user = await _profileService.updateCuratorActiveDeactive(
+        status: status,
+        curatorId: curatorId,
+      );
+
+      if (user != null) {
+        state = state.copyWith(isLoading: false, errorMessage: '');
+        return true;
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to change status',
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to change status',
+      );
+      return false;
+    }
+  }
+
   Future<bool> updateVerificationStatus({
     required String consultantId,
     required bool isVerified,
@@ -77,6 +119,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       }
     } catch (error) {
       state = state.copyWith(isLoading: false, errorMessage: 'Failed');
+      print(state.errorMessage);
     }
   }
 }

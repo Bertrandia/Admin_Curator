@@ -29,14 +29,38 @@ class CuratorTaskNotifier extends StateNotifier<TaskState> {
   Future<bool> updateTaskVisiblity({
     required bool isTaskDisabled,
     required String taskId,
+    required String reason,
   }) async {
     try {
       state = state.copyWith(isLoading: true);
       await _TaskService.updateVisiblity(
         isTaskDisabled: isTaskDisabled,
         taskId: taskId,
+        reasonOfRejection: reason,
       );
       state = state.copyWith(isLoading: false);
+
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to Accept: $e',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> updateTaskBillStatus({
+    required bool isTaskBillCreated,
+    required String taskId,
+  }) async {
+    try {
+      state = state.copyWith(isLoading: true);
+      final taskModel = await _TaskService.updateTaskBillStatus(
+        isTaskBillCreated: isTaskBillCreated,
+        taskId: taskId,
+      );
+      state = state.copyWith(isLoading: false, selectedTask: taskModel);
 
       return true;
     } catch (e) {
@@ -54,8 +78,27 @@ class CuratorTaskNotifier extends StateNotifier<TaskState> {
   }) async {
     try {
       state = state.copyWith(isLoading: true);
-      await _TaskService.updateCurator(curatorID: curatorID, taskId: taskId);
-      state = state.copyWith(isLoading: false);
+      final taskModel = await _TaskService.updateCurator(
+        curatorID: curatorID,
+        taskId: taskId,
+      );
+      state = state.copyWith(isLoading: false, selectedTask: taskModel);
+
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to Accept: $e',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> removeCurator({required String taskId}) async {
+    try {
+      state = state.copyWith(isLoading: true);
+      final taskModel = await _TaskService.removeCurator(taskId: taskId);
+      state = state.copyWith(isLoading: false, selectedTask: taskModel);
 
       return true;
     } catch (e) {
@@ -74,6 +117,7 @@ class CuratorTaskNotifier extends StateNotifier<TaskState> {
     try {
       state = state.copyWith(isLoading: true);
       await _TaskService.addCommentToTask(comment: comment, taskId: taskId);
+      print('comment is addding');
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {

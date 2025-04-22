@@ -15,7 +15,7 @@ class CustomDropdown extends ConsumerStatefulWidget {
   final Function(String?)? onChanged;
   final bool isEnabled;
   final String taskID;
-  final Function? onAssignPressed; // Callback for Assign button
+  final VoidCallback? onAssignPressed; // Callback for Assign button
 
   const CustomDropdown({
     super.key,
@@ -244,6 +244,17 @@ class _CustomDropdownState extends ConsumerState<CustomDropdown> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Task Assigned to new curator')),
                       );
+
+                      ref
+                          .read(taskProvider.notifier)
+                          .getTaskById(id: widget.taskID)
+                          .then((val) {
+                            final taskModel =
+                                ref.watch(taskProvider).selectedTask;
+                            context.push('/crm_tasks', extra: taskModel);
+                          });
+
+                      // widget.onAssignPressed!();
                     });
               }, // Call the provided function
               style: ElevatedButton.styleFrom(
