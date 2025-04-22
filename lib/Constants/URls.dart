@@ -1,7 +1,7 @@
 import 'dart:html' as html;
 
 class URL {
-  Future<void> openUrlInNewTab(String url, String name) async {
+  void openUrlInNewTab(String url, String name) {
     html.window.open(url, name);
   }
 }

@@ -1,14 +1,17 @@
+import 'dart:math';
+
 import 'package:admin_curator/Constants/URls.dart';
 import 'package:admin_curator/Constants/app_colors.dart';
+import 'package:admin_curator/Constants/firebase_collections.dart';
 import 'package:admin_curator/Models/model_tasks.dart';
 import 'package:admin_curator/Models/profile.dart';
+import 'package:admin_curator/Presentation/Widgets/create_bill_component.dart';
 import 'package:admin_curator/Presentation/Widgets/custom_dropDown.dart';
-import 'package:admin_curator/Presentation/Widgets/global_btn.dart';
+import 'package:admin_curator/Presentation/Widgets/taskUnassignReason.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import '../../Constants/app_styles.dart';
 import '../../Models/comment.dart';
@@ -16,6 +19,8 @@ import '../../Providers/providers.dart';
 import '../../Providers/textproviders.dart';
 import '../Widgets/asssign_pric_component.dart';
 import 'dart:html' as html;
+
+import '../Widgets/taskDisableDialog.dart';
 
 class TasksDetailsPAge extends ConsumerStatefulWidget {
   final TaskModel model;
@@ -27,12 +32,27 @@ class TasksDetailsPAge extends ConsumerStatefulWidget {
 
 class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
   CuratorModel? matchingProfile;
+  DocumentReference? taskRef;
+
+  String getRandomString(int length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = Random();
+    return String.fromCharCodes(
+      Iterable.generate(
+        length,
+        (_) => characters.codeUnitAt(random.nextInt(characters.length)),
+      ),
+    );
+  }
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     Future.microtask(() {
+      taskRef = FirebaseFirestore.instance
+          .collection(FirebaseCollections.createTaskCollection)
+          .doc(widget.model.taskRef);
       //   print('id from task: ${widget.model.taskAssignedToCurator!}');
       ref.read(patronProvider.notifier).fetchPatron(widget.model.patronRef!);
       ref.read(taskProvider.notifier).getTaskById(id: widget.model.taskRef);
@@ -44,18 +64,27 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
         ref
             .read(profileProvider.notifier)
             .getCuratorByReference(referenceProfile);
-
-        // print("Profile by ID : ${profileState.singleProfile?.fullName}");
       }
       if (widget.model.patronRef != null) {
-        ref.read(patronProvider.notifier).fetchPatron(widget.model!.patronRef!);
+        ref.read(patronProvider.notifier).fetchPatron(widget.model.patronRef!);
         ref.read(taskProvider.notifier).listenToComments(widget.model.taskRef);
       }
-      print('Document Reference of Task${widget.model.taskDocRef}');
-      ref
-          .read(curatorBillProvider.notifier)
-          .fetchBills(taskRef: widget.model.taskDocRef!);
+      ref.read(curatorBillProvider.notifier).fetchBills(taskRef: taskRef!);
     });
+  }
+
+  void onAssignedPrice() {
+    setState(() {
+      ref.watch(profileProvider);
+    });
+  }
+
+  double _parseToDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 
   @override
@@ -111,12 +140,20 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                   taskState.selectedTask?.isTaskDisabled == false
                       ? ElevatedButton(
                         onPressed: () {
-                          ref
-                              .read(taskProvider.notifier)
-                              .updateTaskVisiblity(
-                                isTaskDisabled: true,
-                                taskId: widget.model.taskRef,
-                              );
+                          final String userEmail =
+                              authState.user?.email ?? "Unknown User";
+                          showDialog(
+                            context: context,
+                            builder:
+                                (context) => DisabledDialog(
+                                  userEmail: userEmail,
+                                  taskID: taskState.selectedTask?.taskRef ?? '',
+                                  ref: ref,
+                                  tasksNotifier: ref.read(
+                                    taskProvider.notifier,
+                                  ),
+                                ),
+                          );
                         },
                         child: Text('Disable Task'),
                         style: ElevatedButton.styleFrom(
@@ -132,6 +169,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                               .updateTaskVisiblity(
                                 isTaskDisabled: false,
                                 taskId: widget.model.taskRef,
+                                reason: "",
                               );
                         },
                         child: Text('Enable Task'),
@@ -141,19 +179,272 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                           elevation: 2,
                         ),
                       ),
+                  SizedBox(width: 5),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (taskState.selectedTask?.isTaskDisabled == false) {
+                        final curatorRef = FirebaseFirestore.instance
+                            .collection(
+                              FirebaseCollections.consultantCollection,
+                            )
+                            .doc(profileState.singleProfile!.id);
+                        final taskRef = FirebaseFirestore.instance
+                            .collection(
+                              FirebaseCollections.createTaskCollection,
+                            )
+                            .doc(taskState.selectedTask!.taskRef);
+
+                        if (taskState.selectedTask?.isTaskBillCreated ==
+                            false) {
+                          await ref
+                              .read(curatorBillProvider.notifier)
+                              .getAdditionalBill(taskRef: taskRef);
+                          final taskStateBill = ref.watch(curatorBillProvider);
+                          final additionalBill = taskStateBill.additionalBill;
+
+                          if (additionalBill != null) {
+                            final map = additionalBill.toFirestore();
+                            // print(map);
+                            List<Map<String, dynamic>> item = [];
+                            final actualValues = {
+                              'task': taskState.selectedTask?.taskSubject,
+
+                              'description':
+                                  taskState.selectedTask?.taskDescription,
+
+                              'taskHours':
+                                  taskState.selectedTask?.taskDurationByAdmin,
+
+                              'taskPrice':
+                                  taskState.selectedTask?.taskPriceByAdmin,
+
+                              'date': DateFormat('dd MMM yyyy, hh:mm a').format(
+                                taskState.selectedTask?.taskDate.toDate() ??
+                                    Timestamp.now().toDate(),
+                              ),
+
+                              'totalAmount':
+                                  taskState.selectedTask?.taskPriceByAdmin,
+                            };
+                            print(map['taskHours'].runtimeType);
+                            print(map['taskPrice'].runtimeType);
+                            final mapping = {
+                              'task': taskState.selectedTask?.taskSubject,
+
+                              'description': map['invoiceDescription'],
+
+                              'taskHours': _parseToDouble(map['taskHours']),
+
+                              'taskPrice': _parseToDouble(map['taskPrice']),
+
+                              'date': DateFormat('dd MMM yyyy, hh:mm a').format(
+                                taskState.selectedTask?.taskDate.toDate() ??
+                                    Timestamp.now().toDate(),
+                              ),
+
+                              'totalAmount': _parseToDouble(map['totalAmount']),
+                            };
+                            item.add(mapping);
+                            item.add(actualValues);
+                            await ref
+                                .read(curatorBillProvider.notifier)
+                                .createTaskBill(
+                                  fileName:
+                                      '${profileState.singleProfile?.fullName}_${taskState.selectedTask?.taskSubject}_${taskState.selectedTask?.taskRef}',
+                                  vendorName: 'Pinch Lifestyle Pvt Ltd.',
+                                  invoiceNumber: getRandomString(10),
+                                  invoiceDate: DateFormat(
+                                    'yyyy-MM-dd',
+                                  ).format(DateTime.now()),
+                                  soldTo:
+                                      profileState.singleProfile?.fullName ??
+                                      '',
+                                  items: item,
+
+                                  taskRef: taskRef,
+                                  curatorRef: curatorRef,
+                                  invoiceDescription:
+                                      taskState.selectedTask?.taskDescription ??
+                                      '',
+                                  totalAmount:
+                                      (taskState
+                                              .selectedTask!
+                                              .taskPriceByAdmin +
+                                          map['totalAmount']) ??
+                                      0,
+                                  taskHours:
+                                      taskState
+                                          .selectedTask
+                                          ?.taskDurationByAdmin ??
+                                      0.0,
+                                  taskPrice:
+                                      taskState
+                                          .selectedTask
+                                          ?.taskPriceByAdmin ??
+                                      0.0,
+                                );
+
+                            await ref
+                                .read(taskProvider.notifier)
+                                .updateTaskBillStatus(
+                                  isTaskBillCreated: true,
+                                  taskId: taskState.selectedTask?.taskRef ?? '',
+                                )
+                                .then((val) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Bill created succesfully.',
+                                      ),
+                                    ),
+                                  );
+                                });
+                          } else {
+                            print('additionalBill is Null');
+                            await ref
+                                .read(curatorBillProvider.notifier)
+                                .createTaskBill(
+                                  fileName:
+                                      '${profileState.singleProfile?.fullName}_${widget.model.taskSubject}_${DateTime.now()}',
+                                  vendorName: 'Pinch Lifestyle Pvt Ltd.',
+                                  invoiceNumber: getRandomString(10),
+                                  invoiceDate: DateFormat(
+                                    'yyyy-MM-dd',
+                                  ).format(DateTime.now()),
+                                  soldTo:
+                                      profileState.singleProfile?.fullName ??
+                                      '',
+                                  items: [
+                                    {
+                                      'task': widget.model.taskSubject,
+
+                                      'description':
+                                          widget.model.taskDescription,
+
+                                      'taskHours':
+                                          widget.model.taskDurationByAdmin,
+
+                                      'taskPrice':
+                                          widget.model.taskPriceByAdmin,
+
+                                      'date': DateFormat(
+                                        'dd MMM yyyy, hh:mm a',
+                                      ).format(widget.model.taskDate.toDate()),
+
+                                      'totalAmount':
+                                          widget.model.taskPriceByAdmin,
+                                    },
+                                  ],
+                                  taskRef: widget.model.taskDocRef!,
+                                  curatorRef: curatorRef,
+                                  invoiceDescription:
+                                      widget.model.taskDescription,
+                                  totalAmount: widget.model.taskPriceByAdmin,
+                                  taskHours:
+                                      taskState
+                                          .selectedTask
+                                          ?.taskDurationByAdmin ??
+                                      0.0,
+                                  taskPrice:
+                                      taskState
+                                          .selectedTask
+                                          ?.taskPriceByAdmin ??
+                                      0.0,
+                                );
+
+                            await ref
+                                .read(taskProvider.notifier)
+                                .updateTaskBillStatus(
+                                  isTaskBillCreated: true,
+                                  taskId: taskState.selectedTask?.taskRef ?? '',
+                                )
+                                .then((val) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Bill created succesfully.',
+                                      ),
+                                    ),
+                                  );
+                                });
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Bill is already created, please reject the current bill to make new bill.',
+                              ),
+                            ),
+                          );
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Task is disabled, cannot create the bill, Please enable the task to create bill',
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: Text('Create Task Bill'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.secondary,
+                      elevation: 2,
+                    ),
+                  ),
                 ],
               ),
             ),
             SizedBox(height: 10),
             CustomDropdown(
+              onAssignPressed: onAssignedPrice,
               taskID: widget.model.taskRef,
               header: 'Assign Task to curator',
-              selectedItem: matchingProfile?.fullName ?? 'NO Assigned',
+              selectedItem:
+                  profileState.singleProfile?.fullName ?? 'NO Assigned',
               items:
                   profileState.profile
                       .map((curator) => curator.fullName)
                       .toList(),
               hintText: 'Search Curator',
+            ),
+            SizedBox(height: 5),
+            ElevatedButton(
+              onPressed: () async {
+                final updatedTask = await showDialog<TaskModel>(
+                  context: context,
+                  builder:
+                      (context) => UnassignDialog(
+                        userEmail: authState.user!.email,
+                        ref: ref,
+                        taskID: taskState.selectedTask?.taskRef ?? '',
+                        tasksNotifier: ref.watch(taskProvider.notifier),
+                      ),
+                );
+
+                if (updatedTask != null) {
+                  context.replace('/crm_tasks', extra: updatedTask);
+                }
+
+                //  context.replace('/dashboard');
+              }, // Call the provided function
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.secondary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                "Unassign",
+                style: TextStyle(color: AppColors.secondary),
+              ),
             ),
             // Content
             Expanded(
@@ -474,6 +765,86 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                   ),
                               ],
                             ),
+                            SizedBox(height: 10),
+                            Text(
+                              'Transferred Tasks',
+                              style: TextStyle(
+                                fontSize: 24,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            taskState.selectedTask?.transferredTasks != null
+                                ? ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount:
+                                      taskState
+                                          .selectedTask
+                                          ?.transferredTasks
+                                          ?.length ??
+                                      0,
+                                  itemBuilder: (context, index) {
+                                    final transferredTask =
+                                        taskState
+                                            .selectedTask!
+                                            .transferredTasks![index];
+
+                                    return Card(
+                                      elevation: 3,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      margin: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: 16,
+                                      ),
+                                      child: ListTile(
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                              horizontal: 16,
+                                            ),
+                                        leading: CircleAvatar(
+                                          backgroundColor: Colors.blue.shade100,
+                                          child: Icon(
+                                            Icons.person,
+                                            color: Colors.blue.shade800,
+                                          ),
+                                        ),
+                                        title: Text(
+                                          transferredTask?.name ?? 'NA',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              "Reason: ${transferredTask?.reason}",
+                                              style: TextStyle(
+                                                color: Colors.grey.shade700,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              "Location: ${taskState.selectedTask?.locationMode}",
+                                              style: TextStyle(
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                                : const SizedBox(),
                           ],
                         ),
                       ),
@@ -599,7 +970,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                           ),
                                                       decoration: InputDecoration(
                                                         hintText:
-                                                            "Type comment feature will come soon",
+                                                            "Enter message here",
                                                         hintStyle: AppStyles
                                                             .subHeadingMobile
                                                             .copyWith(
@@ -684,6 +1055,9 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                         if (comment
                                                             .text
                                                             .isNotEmpty) {
+                                                          print(
+                                                            'comment is pressed',
+                                                          );
                                                           final Comment
                                                           commentModel = Comment(
                                                             commentText:
@@ -727,7 +1101,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                                 taskId:
                                                                     taskState
                                                                         .selectedTask!
-                                                                        .taskID,
+                                                                        .taskRef,
                                                                 comment:
                                                                     commentModel,
                                                               );
@@ -736,15 +1110,15 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                           }
                                                         }
 
-                                                        ScaffoldMessenger.of(
-                                                          context,
-                                                        ).showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(
-                                                              'Comment adding feature is coming soon.',
-                                                            ),
-                                                          ),
-                                                        );
+                                                        // ScaffoldMessenger.of(
+                                                        //   context,
+                                                        // ).showSnackBar(
+                                                        //   SnackBar(
+                                                        //     content: Text(
+                                                        //       'Comment adding feature is coming soon.',
+                                                        //     ),
+                                                        //   ),
+                                                        // );
                                                       },
                                                       icon: const Icon(
                                                         Icons.send,
@@ -767,19 +1141,67 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                           ),
                           SizedBox(height: 10),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               SizedBox(),
                               Text(
                                 'Curator Bills',
                                 style: TextStyle(fontSize: 30),
                               ),
-                              Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(100),
-                                  color: AppColors.primary,
+                              SizedBox(width: 30),
+                              InkWell(
+                                onTap: () {
+                                  if (taskState.selectedTask?.isTaskDisabled ==
+                                      false) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Dialog(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                          child: SizedBox(
+                                            height:
+                                                MediaQuery.of(
+                                                  context,
+                                                ).size.height *
+                                                0.9,
+                                            child: AddBill(
+                                              taskState.selectedTask!,
+                                              profileState.singleProfile?.id ??
+                                                  '',
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Task is disabled, cannot create the bill, Please enable the task to create bill',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Tooltip(
+                                  message: 'Add new Bill',
+                                  child: Container(
+                                    width: 30,
+                                    height: 30,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(100),
+                                      color: AppColors.primary,
+                                    ),
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.add,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
@@ -829,31 +1251,19 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                   ),
                                                 ),
                                                 Row(
-                                                  spacing: 5,
                                                   children: [
-                                                    !(curatorBillState
-                                                                .curatorBills[index]
-                                                                .isAdminApproved ||
-                                                            curatorBillState
-                                                                .curatorBills[index]
-                                                                .isLMApproved)
-                                                        ? ElevatedButton(
-                                                          onPressed: () {
-                                                            ref
-                                                                .read(
-                                                                  curatorBillProvider
-                                                                      .notifier,
-                                                                )
-                                                                .updateBill(
-                                                                  isAdminApproved:
-                                                                      true,
-                                                                  billId:
-                                                                      curatorBillState
-                                                                          .curatorBills[index]
-                                                                          .billDocRef!,
-                                                                );
-                                                          },
-                                                          style: ElevatedButton.styleFrom(
+                                                    SizedBox(height: 5),
+                                                    ElevatedButton(
+                                                      onPressed: () async {
+                                                        URL().openUrlInNewTab(
+                                                          curatorBillState
+                                                              .curatorBills[index]
+                                                              .docUrl,
+                                                          '_name',
+                                                        );
+                                                      },
+                                                      style:
+                                                          ElevatedButton.styleFrom(
                                                             backgroundColor:
                                                                 AppColors
                                                                     .primary,
@@ -862,80 +1272,118 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                                     .secondary,
                                                             elevation: 2,
                                                           ),
-                                                          child: const Text(
-                                                            'Approve Bill',
-                                                          ),
-                                                        )
-                                                        : SizedBox(),
-                                                    !(curatorBillState
-                                                                .curatorBills[index]
-                                                                .status ==
-                                                            'Rejected')
-                                                        ? ElevatedButton(
-                                                          onPressed: () async {
-                                                            String?
-                                                            rejectionReason =
-                                                                await showRejectionDialog(
-                                                                  context,
-                                                                );
-                                                            ref
-                                                                .read(
-                                                                  curatorBillProvider
-                                                                      .notifier,
-                                                                )
-                                                                .updateRejectionBill(
-                                                                  isAdminApproved:
-                                                                      false,
-                                                                  rejectionReason:
-                                                                      rejectionReason ??
-                                                                      '',
-                                                                  billId:
-                                                                      curatorBillState
-                                                                          .curatorBills[index]
-                                                                          .billDocRef!,
-                                                                );
-                                                          },
-                                                          child: Text(
-                                                            'Reject Bill',
-                                                          ),
-                                                          style: ElevatedButton.styleFrom(
-                                                            backgroundColor:
-                                                                AppColors
-                                                                    .primary,
-                                                            foregroundColor:
-                                                                AppColors
-                                                                    .secondary,
-                                                            elevation: 2,
-                                                          ),
-                                                        )
-                                                        : Text(
-                                                          'Rejected',
-                                                          style: TextStyle(
-                                                            color:
-                                                                AppColors.red,
-                                                          ),
-                                                        ),
+                                                      child: Text('View Bill'),
+                                                    ),
+                                                    Row(
+                                                      spacing: 5,
+                                                      children: [
+                                                        !(curatorBillState
+                                                                    .curatorBills[index]
+                                                                    .isAdminApproved ||
+                                                                curatorBillState
+                                                                    .curatorBills[index]
+                                                                    .isLMApproved)
+                                                            ? ElevatedButton(
+                                                              onPressed: () {
+                                                                ref
+                                                                    .read(
+                                                                      curatorBillProvider
+                                                                          .notifier,
+                                                                    )
+                                                                    .updateBill(
+                                                                      isAdminApproved:
+                                                                          true,
+                                                                      billId:
+                                                                          curatorBillState
+                                                                              .curatorBills[index]
+                                                                              .billDocRef!,
+                                                                      status:
+                                                                          'Approved',
+                                                                    );
+                                                              },
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor:
+                                                                    AppColors
+                                                                        .primary,
+                                                                foregroundColor:
+                                                                    AppColors
+                                                                        .secondary,
+                                                                elevation: 2,
+                                                              ),
+                                                              child: const Text(
+                                                                'Approve Bill',
+                                                              ),
+                                                            )
+                                                            : SizedBox(),
+                                                        !(curatorBillState
+                                                                    .curatorBills[index]
+                                                                    .status ==
+                                                                'Rejected')
+                                                            ? PopupMenuButton<
+                                                              String
+                                                            >(
+                                                              onSelected: (
+                                                                String value,
+                                                              ) async {
+                                                                if (value ==
+                                                                    'Reject') {
+                                                                  String?
+                                                                  rejectionReason =
+                                                                      await showRejectionDialog(
+                                                                        context,
+                                                                      );
+                                                                  if (rejectionReason !=
+                                                                      null) {
+                                                                    ref
+                                                                        .read(
+                                                                          curatorBillProvider
+                                                                              .notifier,
+                                                                        )
+                                                                        .updateRejectionBill(
+                                                                          isAdminApproved:
+                                                                              false,
+                                                                          rejectionReason:
+                                                                              rejectionReason,
+                                                                          billId:
+                                                                              curatorBillState.curatorBills[index].billDocRef!,
+                                                                        );
+                                                                  }
+                                                                }
+                                                              },
+                                                              icon: Icon(
+                                                                Icons.more_vert,
+                                                                color:
+                                                                    AppColors
+                                                                        .primary,
+                                                              ),
+                                                              itemBuilder:
+                                                                  (
+                                                                    BuildContext
+                                                                    context,
+                                                                  ) => [
+                                                                    PopupMenuItem<
+                                                                      String
+                                                                    >(
+                                                                      value:
+                                                                          'Reject',
+                                                                      child: Text(
+                                                                        'Reject',
+                                                                      ),
+                                                                    ),
+                                                                    // You can add more options here later if needed
+                                                                  ],
+                                                            )
+                                                            : Text(
+                                                              'Rejected',
+                                                              style: TextStyle(
+                                                                color:
+                                                                    AppColors
+                                                                        .red,
+                                                              ),
+                                                            ),
+                                                      ],
+                                                    ),
                                                   ],
-                                                ),
-                                                SizedBox(height: 5),
-                                                ElevatedButton(
-                                                  onPressed: () async {
-                                                    URL().openUrlInNewTab(
-                                                      curatorBillState
-                                                          .curatorBills[index]
-                                                          .docUrl,
-                                                      '_name',
-                                                    );
-                                                  },
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                        backgroundColor:
-                                                            AppColors.primary,
-                                                        foregroundColor:
-                                                            AppColors.secondary,
-                                                        elevation: 2,
-                                                      ),
-                                                  child: Text('View Bill'),
                                                 ),
                                               ],
                                             ),
@@ -977,115 +1425,10 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                               elevation: 2,
                             ),
                           ),
+
+                          SizedBox(height: 10),
                         ],
                       ),
-
-                      // Visual verification
-                      // Expanded(
-                      //   flex: 2,
-                      //   child: Container(
-                      //     padding: const EdgeInsets.all(16),
-                      //     child: Column(
-                      //       crossAxisAlignment:
-                      //           CrossAxisAlignment.start,
-                      //       children: [
-                      //         const Text(
-                      //           'Verified Images',
-                      //           style: TextStyle(
-                      //             fontSize: 18,
-                      //             fontWeight: FontWeight.bold,
-                      //             color: Color(0xFFAA4400),
-                      //           ),
-                      //         ),
-                      //         const SizedBox(height: 16),
-                      //         const Text(
-                      //           ' Uploaded photos highlighting the tasks performed and the progress made will be shown below',
-                      //           style: TextStyle(
-                      //             fontSize: 14,
-                      //             color: Colors.black87,
-                      //           ),
-                      //         ),
-                      //         const SizedBox(height: 16),
-                      //         // Image preview slots
-                      //      //   Row(
-                      //      //     children: [
-                      //             // Expanded(
-                      //             //   child: _buildImagePreview(
-                      //             //     widget
-                      //             //         .model
-                      //             //         .listOfImagesUploadedByCurator[0],
-                      //             //   ),
-                      //             // ),
-                      //             // const SizedBox(width: 8),
-                      //             // Expanded(
-                      //             //   child: _buildImagePreview(
-                      //             //     widget
-                      //             //         .model
-                      //             //         .listOfImagesUploadedByCurator[0],
-                      //             //   ),
-                      //             // ),
-                      //     //      ],
-                      //    //     ),
-                      //
-                      //         // Row(
-                      //         //   children: [
-                      //         //     Expanded(
-                      //         //       child: _buildImagePreview(
-                      //         //         widget
-                      //         //             .model
-                      //         //             .listOfImagesUploadedByCurator[0],
-                      //         //       ),
-                      //         //     ),
-                      //         //     const SizedBox(width: 8),
-                      //         //     Expanded(
-                      //         //       child: _buildImagePreview(
-                      //         //         widget
-                      //         //             .model
-                      //         //             .listOfImagesUploadedByCurator[1],
-                      //         //       ),
-                      //         //     ),
-                      //         //   ],
-                      //         // ),
-                      //         SizedBox(height: 20),
-                      //         widget.model.curatorTaskStatus ==
-                      //                 'Payment Due'
-                      //             ? Align(
-                      //               alignment: Alignment.center,
-                      //               child: ElevatedButton(
-                      //                 onPressed: () {
-                      //                   FirebaseFirestore.instance
-                      //                       .collection(
-                      //                         'createTaskCollection',
-                      //                       )
-                      //                       .doc(widget.model.taskRef)
-                      //                       .update({
-                      //                         'curatorTaskStatus':
-                      //                             'Completed',
-                      //                         'paymentDueClearedTimeByAdmin':
-                      //                             DateTime.now(),
-                      //                       })
-                      //                       .then((val) {
-                      //                         context.replace(
-                      //                           '/dashboard',
-                      //                         );
-                      //                       });
-                      //                 },
-                      //                 child: Text(
-                      //                   'Complete Task Lifecyle',
-                      //                 ),
-                      //                 style: ElevatedButton.styleFrom(
-                      //                   backgroundColor:
-                      //                       AppColors.primary,
-                      //                   foregroundColor:
-                      //                       AppColors.secondary,
-                      //                 ),
-                      //               ),
-                      //             )
-                      //             : SizedBox(),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),

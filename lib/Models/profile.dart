@@ -11,7 +11,10 @@ class CuratorModel {
   final bool isProfileCompleted;
   final bool isVerified;
   final ProfileData? profile;
-
+  final bool? isRejected;
+  final String? reasonOfRejection;
+  final String? rejectedBy;
+  final DateTime? rejectedTime;
   CuratorModel({
     required this.id,
     required this.fullName,
@@ -23,7 +26,11 @@ class CuratorModel {
     required this.isVerified,
     // required this.isContractSigned,
     this.profile,
+    this.isRejected,
+    this.rejectedBy,
+    this.rejectedTime,
     required this.isProfileCompleted,
+    this.reasonOfRejection,
   });
 
   /// Convert Model to Firestore Map
@@ -38,8 +45,12 @@ class CuratorModel {
       'status': status,
       // 'isContractSigned' : isContractSigned,
       'isVerified': isVerified,
-      'profile': profile?.toMap(), // Ensure proper serialization
+      'profile': profile?.toMap(),
+      'isRejected': isRejected,
+      'reasonOfRejection': reasonOfRejection,
       'isProfileCompleted': isProfileCompleted,
+      'rejectedBy': rejectedBy,
+      'rejectedTime': rejectedTime,
     };
   }
 
@@ -56,6 +67,10 @@ class CuratorModel {
       // isContractSigned: json['isContractSigned'] as bool,
       isVerified: json['isVerified'] as bool,
       isProfileCompleted: json['isProfileCompleted'] as bool,
+      isRejected: json['isRejected'] as bool?,
+      reasonOfRejection: json['reasonOfRejection'] as String?,
+      rejectedBy: json['rejectedBy'] as String?,
+      rejectedTime: json['rejectedTime'] as DateTime?,
       profile:
           json['profile'] != null ? ProfileData.fromMap(json['profile']) : null,
     );
@@ -73,7 +88,11 @@ class CuratorModel {
     // bool? isContractSigned,
     bool? isRejected,
     bool? isVerified,
+    bool? isActive,
     bool? isProfileCompleted,
+    String? reasonOfRejection,
+    String? rejectedBy,
+    DateTime? rejectedTime,
     ProfileData? profile,
   }) {
     return CuratorModel(
@@ -88,6 +107,9 @@ class CuratorModel {
       isVerified: isVerified ?? this.isVerified,
       isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
       profile: profile ?? this.profile,
+      isRejected: isRejected ?? this.isRejected,
+      reasonOfRejection: reasonOfRejection ?? this.reasonOfRejection,
+      rejectedBy: rejectedBy ?? this.rejectedBy,
     );
   }
 }
@@ -110,11 +132,13 @@ class ProfileData {
   final String aadhar;
   final String pan;
   final List<String> listOfDocs;
+  final List<String> availabilitySlots;
   final List<Education> higherEducation;
   final List<WorkExp> workExperience;
   final List<ImagesWithTitle> imagesWithTitle;
   final String departmentInterested;
   final List<String> selectedSkills;
+  final String travelPreference;
   final String dateOfAvailability;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -142,10 +166,12 @@ class ProfileData {
     required this.aadhar,
     required this.pan,
     required this.listOfDocs,
+    required this.availabilitySlots,
     required this.higherEducation,
     required this.workExperience,
     required this.departmentInterested,
     required this.selectedSkills,
+    required this.travelPreference,
     required this.dateOfAvailability,
     required this.imagesWithTitle,
     required this.createdAt,
@@ -186,6 +212,8 @@ class ProfileData {
       'aboutUrSelf': aboutSelf,
       'isContractSigned': isContractSigned,
       'bankAccountDetails': bankAccountDetails?.toMap(),
+      'availabilitySlots': availabilitySlots,
+      'travelPreference': travelPreference,
     };
   }
 
@@ -209,6 +237,7 @@ class ProfileData {
       aadhar: map['aadhar'] ?? '',
       pan: map['pan'] ?? '',
       listOfDocs: List<String>.from(map['listOfDocs'] ?? []),
+      availabilitySlots: List<String>.from(map['availabilitySlots'] ?? []),
       imagesWithTitle:
           (map['imagesWithTitle'] as List<dynamic>?)
               ?.map((e) => ImagesWithTitle.fromMap(e as Map<String, dynamic>))
@@ -226,6 +255,7 @@ class ProfileData {
           [],
       departmentInterested: map['departmentInterested'] ?? '',
       selectedSkills: List<String>.from(map['selectedSkills'] ?? []),
+      travelPreference: map['travelPreference'] ?? "",
       dateOfAvailability: map['dateOfAvailability'] ?? '',
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),

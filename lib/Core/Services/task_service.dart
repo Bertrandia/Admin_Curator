@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import '../../Constants/firebase_collections.dart';
 import '../../Models/comment.dart';
 import '../../Models/model_tasks.dart';
@@ -78,6 +79,22 @@ class TasksService {
     return null;
   }
 
+  Future<TaskModel?> removeCurator({required String taskId}) async {
+    DocumentReference taskRef = _firestore
+        .collection(FirebaseCollections.createTaskCollection)
+        .doc(taskId);
+    WriteBatch batch = _firestore.batch();
+    batch.update(taskRef, {
+      'taskAssignedToCurator': null,
+      'isTaskAssignedToCurator': false,
+    });
+    await batch.commit();
+    DocumentSnapshot updatedTaskSnap = await taskRef.get();
+    if (updatedTaskSnap.exists) {
+      return TaskModel.fromFirestore(updatedTaskSnap);
+    }
+    return null;
+  }
   // Future<TaskModel?> updateCurator({
   //   required String taskId,
   //
@@ -105,34 +122,78 @@ class TasksService {
     required String taskId,
     required Comment comment,
   }) async {
-    DocumentReference commentRef =
-        _firestore
-            .collection(FirebaseCollections.createTaskCollection)
-            .doc(taskId)
-            .collection('commentsThread')
-            .doc();
+    try {
+      DocumentReference commentRef =
+          _firestore
+              .collection(FirebaseCollections.createTaskCollection)
+              .doc(taskId)
+              .collection('commentsThread')
+              .doc();
 
-    WriteBatch batch = _firestore.batch();
-    batch.set(commentRef, comment.toJson());
+      WriteBatch batch = _firestore.batch();
+      batch.set(commentRef, comment.toJson());
 
-    await batch.commit();
+      await batch.commit();
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
   }
 
   Future<TaskModel?> updateVisiblity({
     required bool isTaskDisabled,
     required String taskId,
+    required String reasonOfRejection,
   }) async {
-    DocumentReference taskRef = _firestore
-        .collection(FirebaseCollections.createTaskCollection)
-        .doc(taskId);
-    WriteBatch batch = _firestore.batch();
-    batch.update(taskRef, {'isTaskDisabled': isTaskDisabled});
-    await batch.commit();
-    DocumentSnapshot updatedTaskSnap = await taskRef.get();
-    if (updatedTaskSnap.exists) {
-      return TaskModel.fromFirestore(updatedTaskSnap);
+    try {
+      DocumentReference taskRef = _firestore
+          .collection(FirebaseCollections.createTaskCollection)
+          .doc(taskId);
+
+      WriteBatch batch = _firestore.batch();
+      batch.update(taskRef, {
+        'isTaskDisabled': isTaskDisabled,
+        'taskDisablingReason': reasonOfRejection,
+      });
+
+      await batch.commit();
+
+      DocumentSnapshot updatedTaskSnap = await taskRef.get();
+      if (updatedTaskSnap.exists) {
+        return TaskModel.fromFirestore(updatedTaskSnap);
+      }
+      return null;
+    } catch (e, stackTrace) {
+      debugPrint('Error updating task visibility: $e');
+      debugPrintStack(stackTrace: stackTrace);
+      return null;
     }
-    return null;
+  }
+
+  Future<TaskModel?> updateTaskBillStatus({
+    required bool isTaskBillCreated,
+    required String taskId,
+  }) async {
+    try {
+      DocumentReference taskRef = _firestore
+          .collection(FirebaseCollections.createTaskCollection)
+          .doc(taskId);
+
+      WriteBatch batch = _firestore.batch();
+      batch.update(taskRef, {'isTaskBillCreated': isTaskBillCreated});
+
+      await batch.commit();
+
+      DocumentSnapshot updatedTaskSnap = await taskRef.get();
+      if (updatedTaskSnap.exists) {
+        return TaskModel.fromFirestore(updatedTaskSnap);
+      }
+      return null;
+    } catch (e, stackTrace) {
+      debugPrint('Error updating task visibility: $e');
+      debugPrintStack(stackTrace: stackTrace);
+      return null;
+    }
   }
 
   Stream<TaskModel>? getTaskById({required String id}) {

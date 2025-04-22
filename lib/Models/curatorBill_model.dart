@@ -14,6 +14,10 @@ class CuratorBill {
   String status;
   DocumentReference? taskRef;
   int totalAmount;
+  bool? isAdditionalBillAdded;
+  double taskHours;
+  double taskPrice;
+  bool? isTaskBillCreated;
 
   CuratorBill({
     this.billDocRef,
@@ -29,6 +33,10 @@ class CuratorBill {
     required this.status,
     required this.taskRef,
     required this.totalAmount,
+    this.isAdditionalBillAdded = false,
+    required this.taskHours,
+    required this.taskPrice,
+    this.isTaskBillCreated,
   });
 
   // Convert Firestore DocumentSnapshot to CuratorBill
@@ -45,7 +53,7 @@ class CuratorBill {
       invoiceDescription: data['invoiceDescription'] ?? '',
       invoiceNumber: data['invoiceNumber'] ?? '',
       invoiceSubmittedAt: data['invoiceSubmittedAt'] ?? Timestamp.now(),
-      invoiceSubmittedBy: data['invoiceSubmittedBy'] ?? '',
+      invoiceSubmittedBy: data['invoiceSubmittedBy'],
       isAdminApproved: data['isAdminApproved'] ?? false,
       isLMApproved: data['isLMApproved'] ?? false,
       reasonOfRejection: data['reasonOfRejection'] ?? '',
@@ -53,6 +61,10 @@ class CuratorBill {
       taskRef:
           data['taskRef'] != null ? data['taskRef'] as DocumentReference : null,
       totalAmount: (data['totalAmount'] ?? 0).toInt(),
+      isAdditionalBillAdded: data['isAdditionalBillAdded'] ?? false,
+      taskHours: _parseDouble(data['taskHours']),
+      taskPrice: _parseDouble(data['taskPrice']),
+      isTaskBillCreated: data['isTaskBillCreated'] ?? false,
     );
   }
 
@@ -71,6 +83,18 @@ class CuratorBill {
       'status': status,
       'taskRef': taskRef,
       'totalAmount': totalAmount,
+      'isAdditionalBillAdded': isAdditionalBillAdded,
+      'taskHours': taskHours.toDouble(),
+      'taskPrice': taskPrice.toDouble(),
+      'isTaskBillCreated': isTaskBillCreated,
     };
   }
+}
+
+double _parseDouble(dynamic value) {
+  if (value == null) return 0.0;
+  if (value is double) return value;
+  if (value is int) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0.0;
+  return 0.0;
 }

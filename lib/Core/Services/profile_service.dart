@@ -15,6 +15,81 @@ class ProfileService {
           List<CuratorModel> curatorsList = [];
 
           for (var doc in consultantsSnapshot.docs) {
+            final data = doc.data();
+            if (data['isRejected'] == true) continue;
+            String consultantId = doc.id;
+            CuratorModel curator = CuratorModel.fromJson(doc.data());
+            DocumentSnapshot profileSnapshot =
+                await _firestore
+                    .collection(FirebaseCollections.consultantCollection)
+                    .doc(consultantId)
+                    .collection(FirebaseCollections.profileCollection)
+                    .doc(FirebaseCollections.userProfile)
+                    .get();
+
+            if (profileSnapshot.exists) {
+              ProfileData profile = ProfileData.fromMap(
+                profileSnapshot.data() as Map<String, dynamic>,
+              );
+              curator = curator.copyWith(profile: profile);
+            }
+
+            curatorsList.add(curator);
+          }
+
+          return curatorsList;
+        });
+  }
+
+  Stream<List<CuratorModel>> getVerifiedCuratorsWithProfilesStream() {
+    return _firestore
+        .collection(FirebaseCollections.consultantCollection)
+        .where('isProfileCompleted', isEqualTo: true)
+        .where('isVerified', isEqualTo: true)
+        .snapshots()
+        .asyncMap((consultantsSnapshot) async {
+          List<CuratorModel> curatorsList = [];
+
+          for (var doc in consultantsSnapshot.docs) {
+            final data = doc.data();
+            if (data['isRejected'] == true) continue;
+            String consultantId = doc.id;
+            CuratorModel curator = CuratorModel.fromJson(doc.data());
+            DocumentSnapshot profileSnapshot =
+                await _firestore
+                    .collection(FirebaseCollections.consultantCollection)
+                    .doc(consultantId)
+                    .collection(FirebaseCollections.profileCollection)
+                    .doc(FirebaseCollections.userProfile)
+                    .get();
+
+            if (profileSnapshot.exists) {
+              ProfileData profile = ProfileData.fromMap(
+                profileSnapshot.data() as Map<String, dynamic>,
+              );
+              curator = curator.copyWith(profile: profile);
+            }
+
+            curatorsList.add(curator);
+          }
+
+          return curatorsList;
+        });
+  }
+
+  Stream<List<CuratorModel>> getActiveCurators() {
+    return _firestore
+        .collection(FirebaseCollections.consultantCollection)
+        .where('isProfileCompleted', isEqualTo: true)
+        .where('isVerified', isEqualTo: true)
+        .where('status', isEqualTo: true)
+        .snapshots()
+        .asyncMap((consultantsSnapshot) async {
+          List<CuratorModel> curatorsList = [];
+
+          for (var doc in consultantsSnapshot.docs) {
+            final data = doc.data();
+            if (data['isRejected'] == true) continue;
             String consultantId = doc.id;
             CuratorModel curator = CuratorModel.fromJson(doc.data());
             DocumentSnapshot profileSnapshot =
@@ -59,6 +134,29 @@ class ProfileService {
         'rejectedAt': rejectedAt,
         'rejectedBy': rejectedBy,
       });
+
+      final updatedSnapshot = await docRef.get();
+      if (updatedSnapshot.exists) {
+        return CuratorModel.fromJson(
+          updatedSnapshot.data() as Map<String, dynamic>,
+        );
+      }
+    } catch (e) {
+      print("Error updating curator status: $e");
+    }
+    return null;
+  }
+
+  Future<CuratorModel?> updateCuratorActiveDeactive({
+    required bool status,
+    required String curatorId,
+  }) async {
+    try {
+      final docRef = _firestore
+          .collection(FirebaseCollections.consultantCollection)
+          .doc(curatorId);
+
+      await docRef.update({'status': status});
 
       final updatedSnapshot = await docRef.get();
       if (updatedSnapshot.exists) {

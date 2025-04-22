@@ -4,10 +4,13 @@ import 'package:admin_curator/Models/profile.dart';
 import 'package:admin_curator/Presentation/CuratorProfiles/Widgets/rejectionRandomSheet.dart';
 import 'package:admin_curator/Presentation/Widgets/global_btn.dart';
 import 'package:admin_curator/Providers/providers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../../Constants/app_colors.dart';
 
 class ProfileDetailsPage extends ConsumerStatefulWidget {
   final CuratorModel curatorModel;
@@ -18,39 +21,26 @@ class ProfileDetailsPage extends ConsumerStatefulWidget {
 }
 
 class _ProfileDetailsPageState extends ConsumerState<ProfileDetailsPage> {
-  /// 🔹 Fetch PDF from Firestore URL and convert it to Uint8List
-  // Future<void> _loadPdf() async {
-  //   if (widget.curatorModel.profile?.curatorAgreementUrl == null ||
-  //       widget.curatorModel.profile!.curatorAgreementUrl!.isEmpty) {
-  //     return;
-  //   }
-  //
-  //   setState(() => isLoading = true);
-  //
-  //   try {
-  //     final response = await http.get(
-  //       Uri.parse(widget.curatorModel.profile!.curatorAgreementUrl!),
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       setState(() {
-  //         pdfBytes = response.bodyBytes as Uint8List?;
-  //         isLoading = false;
-  //       });
-  //     } else {
-  //       throw Exception("Failed to load PDF");
-  //     }
-  //   } catch (e) {
-  //     print("Error loading PDF: $e");
-  //     setState(() => isLoading = false);
-  //   }
-  // }
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Future.microtask(() {
+      final referenceProfile = FirebaseFirestore.instance
+          .collection('Consultants')
+          .doc(widget.curatorModel.id);
+
+      ref
+          .read(profileProvider.notifier)
+          .getCuratorByReference(referenceProfile);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final profileNotifier = ref.read(profileProvider.notifier);
     final authState = ref.watch(authNotifierProvider);
-
+    final profileState = ref.watch(profileProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       body: ListView(
@@ -96,6 +86,41 @@ class _ProfileDetailsPageState extends ConsumerState<ProfileDetailsPage> {
                       );
                     },
                     height: 35,
+                  ),
+                ),
+              ],
+            ),
+          if (widget.curatorModel.isVerified == true)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    if (profileState.singleProfile?.status == true) {
+                      ref
+                          .read(profileProvider.notifier)
+                          .updateCuratorActiveDeactive(
+                            curatorId: widget.curatorModel.id,
+                            status: false,
+                          );
+                    } else {
+                      ref
+                          .read(profileProvider.notifier)
+                          .updateCuratorActiveDeactive(
+                            curatorId: widget.curatorModel.id,
+                            status: true,
+                          );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.secondary,
+                    elevation: 2,
+                  ),
+                  child: Text(
+                    profileState.singleProfile?.status == true
+                        ? 'Deactivate'
+                        : 'Activate',
                   ),
                 ),
               ],
@@ -177,7 +202,43 @@ class _ProfileDetailsPageState extends ConsumerState<ProfileDetailsPage> {
           personalInfoRow("About:", widget.curatorModel.profile!.aboutSelf),
 
           const SizedBox(height: 20),
+          personalInfoRow(
+            'Location Mode',
+            widget.curatorModel.profile?.travelPreference ?? "NA",
+          ),
+          const SizedBox(height: 20),
+          personalSkillSetRow(
+            'Slots available',
+            widget.curatorModel.profile?.availabilitySlots ?? [],
+          ),
+          SizedBox(height: 20),
 
+          sectionHeader('Skills', false),
+          personalSkillSetRow(
+            'Skillset',
+            widget.curatorModel.profile?.selectedSkills ?? ['NA'],
+          ),
+          sectionHeader("Location", false),
+          personalInfoRow(
+            "Address",
+            "${widget.curatorModel.profile!.addressLine1} ${widget.curatorModel.profile!.addressLine2}",
+          ),
+          personalInfoRow("District:", widget.curatorModel.profile!.district),
+          personalInfoRow("State:", widget.curatorModel.profile!.state),
+          personalInfoRow("Pincode:", widget.curatorModel.profile!.pincode),
+
+          const SizedBox(height: 20),
+          sectionHeader("Higher Education", false),
+          ...widget.curatorModel.profile!.higherEducation.map(
+            (edu) => personalInfoRow(edu.institute, edu.degree),
+          ),
+
+          const SizedBox(height: 20),
+          sectionHeader("Work Experience", false),
+          ...widget.curatorModel.profile!.workExperience.map(
+            (work) => personalInfoRow(work.organization, work.role),
+          ),
+          const SizedBox(height: 20),
           sectionHeader('Bank Details', false),
           personalInfoRow(
             'Bank Name:',
@@ -200,28 +261,6 @@ class _ProfileDetailsPageState extends ConsumerState<ProfileDetailsPage> {
           personalInfoRow(
             'IFSC code:',
             widget.curatorModel.profile?.bankAccountDetails?.ifscCode ?? 'NA',
-          ),
-
-          const SizedBox(height: 20),
-          sectionHeader("Location", false),
-          personalInfoRow(
-            "Address",
-            "${widget.curatorModel.profile!.addressLine1} ${widget.curatorModel.profile!.addressLine2}",
-          ),
-          personalInfoRow("District:", widget.curatorModel.profile!.district),
-          personalInfoRow("State:", widget.curatorModel.profile!.state),
-          personalInfoRow("Pincode:", widget.curatorModel.profile!.pincode),
-
-          const SizedBox(height: 20),
-          sectionHeader("Higher Education", false),
-          ...widget.curatorModel.profile!.higherEducation.map(
-            (edu) => personalInfoRow(edu.institute, edu.degree),
-          ),
-
-          const SizedBox(height: 20),
-          sectionHeader("Work Experience", false),
-          ...widget.curatorModel.profile!.workExperience.map(
-            (work) => personalInfoRow(work.organization, work.role),
           ),
         ],
       ),
@@ -284,6 +323,30 @@ class _ProfileDetailsPageState extends ConsumerState<ProfileDetailsPage> {
             ),
           ),
           Expanded(child: Text(value)),
+        ],
+      ),
+    );
+  }
+
+  Widget personalSkillSetRow(String label, List<String> value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 150,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: Wrap(
+              children: [
+                for (int i = 0; i < value.length; i++) Text('${value[i]},  '),
+              ],
+            ),
+          ),
         ],
       ),
     );

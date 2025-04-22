@@ -1,32 +1,16 @@
 import 'package:admin_curator/Constants/app_colors.dart';
-import 'package:admin_curator/Models/task_model.dart';
 import 'package:admin_curator/Presentation/Dashboard/Widgets/custom_SearchableDD.dart';
 import 'package:admin_curator/Presentation/Dashboard/Widgets/data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../Providers/providers.dart';
-//
-// class DashboardScreen extends StatefulWidget {
-//   const DashboardScreen({super.key});
-//
-//   @override
-//   State<DashboardScreen> createState() => _DashboardScreenState();
-// }
 
 class DashboardScreen extends ConsumerWidget {
-  String selectedChip = 'Pending';
-
-  // void _filterTasks() {
-  //   setState(() {
-  //     _taskList =
-  //         taskList.where((task) => task.status == selectedChip).toList();
-  //   });
-  // }
+  const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final taskList = ref.watch(taskProvider);
-    final profileState = ref.watch(profileProvider);
     final selectedCurator = ref.watch(selectedCuratorProvider);
     final tasksNotifier = ref.watch(tasksNotifierProvider.notifier);
     final int pendingTasks =
@@ -60,7 +44,7 @@ class DashboardScreen extends ConsumerWidget {
             children: [
               const Text(
                 'Task Dashboard',
-                style: TextStyle( 
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFBF4D28),
@@ -82,7 +66,10 @@ class DashboardScreen extends ConsumerWidget {
                 style: ButtonStyle(
                   backgroundColor: WidgetStatePropertyAll(AppColors.primary),
                 ),
-                child: Text('Tasks CSV',style: TextStyle(color:AppColors.white)),
+                child: Text(
+                  'Tasks CSV',
+                  style: TextStyle(color: AppColors.white),
+                ),
               ),
             ],
           ),
@@ -151,6 +138,7 @@ class DashboardScreen extends ConsumerWidget {
             children:
                 [
                   'All',
+                  'Not Assigned',
                   'Pending',
                   'In Progress',
                   'Payment Due',

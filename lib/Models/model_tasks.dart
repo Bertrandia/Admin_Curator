@@ -45,8 +45,10 @@ class TaskModel {
   Timestamp? taskEndTimeByCurator;
   List<String> listOfImagesUploadedByCurator;
   List<String> listOfVideosUploadedByCurator;
+  List<TransferredTaskModel?>? transferredTasks;
   String? locationMode;
   bool isAdminApproved;
+  bool? isTaskBillCreated;
 
   TaskModel({
     this.taskDocRef,
@@ -95,6 +97,8 @@ class TaskModel {
     this.listOfVideosUploadedByCurator = const [],
     this.locationMode,
     this.isAdminApproved = false,
+    this.transferredTasks,
+    this.isTaskBillCreated,
   });
 
   // Convert Firestore DocumentSnapshot to TaskModel
@@ -155,6 +159,15 @@ class TaskModel {
       ),
       locationMode: data['locationMode'] ?? 'Not available',
       isAdminApproved: data['isAdminApproved'] ?? false,
+      transferredTasks:
+          (data['listOfTaskTransferred'] as List<dynamic>? ?? [])
+              .map(
+                (item) => TransferredTaskModel.fromMap(
+                  Map<String, dynamic>.from(item),
+                ),
+              )
+              .toList(),
+      isTaskBillCreated: data['isTaskBillCreated'] ?? false,
     );
   }
 
@@ -205,6 +218,171 @@ class TaskModel {
       'listOfImagesUploadedByCurator': listOfImagesUploadedByCurator,
       'listOfVideosUploadedByCurator': listOfVideosUploadedByCurator,
       'locationMode': locationMode,
+      'listOfTaskTransferred':
+          transferredTasks?.map((e) => e?.toMap()).toList(),
     };
+  }
+
+  Map<String, dynamic> toJson() => {
+    'taskRef': taskRef,
+    'assignedLMName': assignedLMName,
+    'billingModel': billingModel,
+    'categoryTag': categoryTag,
+    'createdAt': createdAt.millisecondsSinceEpoch,
+    'createdBy': createdBy,
+    'isCockpitTaskCreated': isCockpitTaskCreated,
+    'isDelayed': isDelayed,
+    'isTaskDisabled': isTaskDisabled,
+    'patronName': patronName,
+    'patronAddress': patronAddress,
+    'priority': priority,
+    'refImage': refImage,
+    'remarks': remarks,
+    'selectedHomeCuratorDepartment': selectedHomeCuratorDepartment,
+    'taskAssignDate': taskAssignDate.millisecondsSinceEpoch,
+    'taskCategory': taskCategory,
+    'taskDate': taskDate.millisecondsSinceEpoch,
+    'taskDescription': taskDescription,
+    'taskDueDate': taskDueDate.millisecondsSinceEpoch,
+    'taskEndTime': taskEndTime.millisecondsSinceEpoch,
+    'taskID': taskID,
+    'taskOwner': taskOwner,
+    'taskRecievedTime': taskRecievedTime,
+    'taskStartTime': taskStartTime.millisecondsSinceEpoch,
+    'taskStatusCategory': taskStatusCategory,
+    'taskSubCategory': taskSubCategory,
+    'taskSubject': taskSubject,
+    'curatorTaskStatus': curatorTaskStatus,
+    'taskAssignedToCurator': taskAssignedToCurator,
+    'assignedTimeSlot': assignedTimeSlot,
+    'taskPriceByAdmin': taskPriceByAdmin,
+    'taskDurationByAdmin': taskDurationByAdmin,
+    'taskStartTimeByCurator': taskStartTimeByCurator?.millisecondsSinceEpoch,
+    'taskEndTimeByCurator': taskEndTimeByCurator?.millisecondsSinceEpoch,
+    'listOfImagesUploadedByCurator': listOfImagesUploadedByCurator,
+    'listOfVideosUploadedByCurator': listOfVideosUploadedByCurator,
+    'locationMode': locationMode,
+    'isAdminApproved': isAdminApproved,
+    'transferredTasks': transferredTasks?.map((e) => e?.toJson()).toList(),
+  };
+
+  factory TaskModel.fromJson(Map<String, dynamic> json) {
+    return TaskModel(
+      taskRef: json['taskRef'],
+      assignedLMName: json['assignedLMName'],
+      billingModel: json['billingModel'],
+      categoryTag: json['categoryTag'],
+      createdAt: Timestamp.fromMillisecondsSinceEpoch(json['createdAt']),
+      createdBy: json['createdBy'],
+      isCockpitTaskCreated: json['isCockpitTaskCreated'],
+      isDelayed: json['isDelayed'],
+      isTaskDisabled: json['isTaskDisabled'],
+      patronName: json['patronName'],
+      patronAddress: json['patronAddress'],
+      priority: json['priority'],
+      refImage: json['refImage'],
+      remarks: json['remarks'],
+      selectedHomeCuratorDepartment: json['selectedHomeCuratorDepartment'],
+      taskAssignDate: Timestamp.fromMillisecondsSinceEpoch(
+        json['taskAssignDate'],
+      ),
+      taskCategory: json['taskCategory'],
+      taskDate: Timestamp.fromMillisecondsSinceEpoch(json['taskDate']),
+      taskDescription: json['taskDescription'],
+      taskDueDate: Timestamp.fromMillisecondsSinceEpoch(json['taskDueDate']),
+      taskEndTime: Timestamp.fromMillisecondsSinceEpoch(json['taskEndTime']),
+      taskID: json['taskID'],
+      taskOwner: json['taskOwner'],
+      taskRecievedTime: json['taskRecievedTime'],
+      taskStartTime: Timestamp.fromMillisecondsSinceEpoch(
+        json['taskStartTime'],
+      ),
+      taskStatusCategory: json['taskStatusCategory'],
+      taskSubCategory: json['taskSubCategory'],
+      taskSubject: json['taskSubject'],
+      curatorTaskStatus: json['curatorTaskStatus'],
+      taskAssignedToCurator: json['taskAssignedToCurator'],
+      assignedTimeSlot: json['assignedTimeSlot'],
+      taskPriceByAdmin: (json['taskPriceByAdmin'] ?? 0.0).toDouble(),
+      taskDurationByAdmin: (json['taskDurationByAdmin'] ?? 0.0).toDouble(),
+      taskStartTimeByCurator:
+          json['taskStartTimeByCurator'] != null
+              ? Timestamp.fromMillisecondsSinceEpoch(
+                json['taskStartTimeByCurator'],
+              )
+              : null,
+      taskEndTimeByCurator:
+          json['taskEndTimeByCurator'] != null
+              ? Timestamp.fromMillisecondsSinceEpoch(
+                json['taskEndTimeByCurator'],
+              )
+              : null,
+      listOfImagesUploadedByCurator: List<String>.from(
+        json['listOfImagesUploadedByCurator'] ?? [],
+      ),
+      listOfVideosUploadedByCurator: List<String>.from(
+        json['listOfVideosUploadedByCurator'] ?? [],
+      ),
+      locationMode: json['locationMode'],
+      isAdminApproved: json['isAdminApproved'] ?? false,
+      transferredTasks:
+          (json['transferredTasks'] as List<dynamic>?)
+              ?.map((item) => TransferredTaskModel.fromJson(item))
+              .toList(),
+    );
+  }
+}
+
+class TransferredTaskModel {
+  final String docID;
+  final String name;
+  final String reason;
+  final DocumentReference ref;
+  final Timestamp rejectedAt;
+
+  TransferredTaskModel({
+    required this.docID,
+    required this.name,
+    required this.reason,
+    required this.ref,
+    required this.rejectedAt,
+  });
+
+  factory TransferredTaskModel.fromMap(Map<String, dynamic> data) {
+    return TransferredTaskModel(
+      docID: data['docID'] ?? '',
+      name: data['name'] ?? '',
+      reason: data['reason'] ?? '',
+      ref: data['ref'] as DocumentReference,
+      rejectedAt: data['rejectedAt'] ?? Timestamp.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'docID': docID,
+      'name': name,
+      'reason': reason,
+      'ref': ref,
+      'rejectedAt': rejectedAt,
+    };
+  }
+
+  Map<String, dynamic> toJson() => {
+    'docID': docID,
+    'name': name,
+    'reason': reason,
+    'rejectedAt': rejectedAt.millisecondsSinceEpoch,
+    'refPath': ref.path, // serialize path instead of DocumentReference
+  };
+
+  factory TransferredTaskModel.fromJson(Map<String, dynamic> json) {
+    return TransferredTaskModel(
+      docID: json['docID'],
+      name: json['name'],
+      reason: json['reason'],
+      ref: FirebaseFirestore.instance.doc(json['refPath']),
+      rejectedAt: Timestamp.fromMillisecondsSinceEpoch(json['rejectedAt']),
+    );
   }
 }

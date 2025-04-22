@@ -30,15 +30,21 @@ final taskProvider = StateNotifierProvider<CuratorTaskNotifier, TaskState>(
 );
 
 final tasksServiceProvider = Provider<TasksService>((ref) {
-  return TasksService();  
+  return TasksService();
 });
 
-final tasksNotifierProvider = StateNotifierProvider<TasksNotifier, TaskState>((ref) {
-  final tasksService = ref.watch(tasksServiceProvider); 
+final tasksNotifierProvider = StateNotifierProvider<TasksNotifier, TaskState>((
+  ref,
+) {
+  final tasksService = ref.watch(tasksServiceProvider);
   return TasksNotifier(tasksService);
 });
 
 final selectedChipProvider = StateProvider<String>((ref) => 'All');
+final selectedChoicCuratorChipProvider = StateProvider<String>(
+  (ref) => 'Active',
+);
+// final selectedCuratorChipProvider = StateProvider<bool>((ref) => true);
 
 final taskHoursProvider = StateProvider<double>((ref) => 0); // Default 2 hours
 final taskPriceProvider = StateProvider<double>((ref) => 0.0); // Default ₹500
@@ -48,9 +54,7 @@ final patronProvider = StateNotifierProvider<PatronNotifier, PatronState>(
 );
 final selectedCuratorProvider = StateProvider<String?>((ref) => null);
 
-
 final curatorBillProvider =
     StateNotifierProvider<CuratorBillNotifier, TaskState>(
       (ref) => CuratorBillNotifier(CuratorBillService()),
     );
-
