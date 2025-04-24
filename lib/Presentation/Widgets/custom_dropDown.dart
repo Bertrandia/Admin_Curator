@@ -231,21 +231,31 @@ class _CustomDropdownState extends ConsumerState<CustomDropdown> {
           Align(
             alignment: Alignment.topCenter,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 final profileState = ref.watch(profileProvider);
                 final profile = profileState.profile.firstWhere(
                   (profile) => profile.fullName == _selectedItem,
                 );
                 print(profile.fullName);
-                ref
+                await ref
                     .read(taskProvider.notifier)
                     .updateCurator(curatorID: profile.id, taskId: widget.taskID)
-                    .then((value) {
+                    .then((value) async {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Task Assigned to new curator')),
                       );
+                      await ref
+                          .read(taskProvider.notifier)
+                          .notifyUser(
+                            userId: profile.id,
+                            title: "New Task",
+                            body:
+                                "A new Task has been added. Click here to check",
+                            action: "NEW_TASK_ADDED",
+                          );
 
-                      ref
+                      print("notification triggered");
+                      await ref
                           .read(taskProvider.notifier)
                           .getTaskById(id: widget.taskID)
                           .then((val) {

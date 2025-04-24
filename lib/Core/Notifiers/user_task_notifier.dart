@@ -1,9 +1,7 @@
-import 'package:admin_curator/Core/States/curator_profile_state.dart';
 import 'package:admin_curator/Core/States/curator_task_state.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../Models/comment.dart';
-import '../../Models/model_tasks.dart';
 import '../Services/task_service.dart';
 
 class CuratorTaskNotifier extends StateNotifier<TaskState> {
@@ -50,6 +48,38 @@ class CuratorTaskNotifier extends StateNotifier<TaskState> {
     }
   }
 
+  Future<void> notifyAllCurators({
+    required String title,
+    required String body,
+    required String action,
+    Map<String, dynamic>? additionalData,
+  }) async {
+    state = state.copyWith(action: 'notificationUpdate', loading: true);
+    await _TaskService.notifyAllCurators(
+      title: title,
+      body: body,
+      action: action,
+    );
+    state = state.copyWith(action: 'notificationUpdate', loading: false);
+  }
+
+  Future<void> notifyUser({
+    required String userId,
+    required String title,
+    required String body,
+    required String action,
+    Map<String, dynamic>? additionalData,
+  }) async {
+    state = state.copyWith(action: 'notificationUserUpdate', loading: true);
+    await _TaskService.notifyUser(
+      userId: userId,
+      title: title,
+      body: body,
+      action: action,
+    );
+    state = state.copyWith(action: 'notificationUserUpdate', loading: false);
+  }
+
   Future<bool> updateTaskBillStatus({
     required bool isTaskBillCreated,
     required String taskId,
@@ -88,6 +118,29 @@ class CuratorTaskNotifier extends StateNotifier<TaskState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
+        errorMessage: 'Failed to Accept: $e',
+      );
+      return false;
+    }
+  }
+
+  Future<bool> updateTaskLifecycle({required DocumentReference taskRef}) async {
+    try {
+      state = state.copyWith(action: 'cycleUpdate', loading: true);
+      final taskModel = await _TaskService.updateTaskLifecycle(
+        taskRef: taskRef,
+      );
+      state = state.copyWith(
+        action: 'cycleUpdate',
+        loading: false,
+        selectedTask: taskModel,
+      );
+
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        action: 'cycleUpdate',
+        loading: false,
         errorMessage: 'Failed to Accept: $e',
       );
       return false;
@@ -165,6 +218,24 @@ class CuratorTaskNotifier extends StateNotifier<TaskState> {
         isLoading: false,
         errorMessage: 'Failed to Accept: $e',
       );
+    }
+  }
+
+  Future<bool> taskAdminReferenceUpdate({
+    required String taskId,
+    required List<String> files,
+  }) async {
+    try {
+      state = state.copyWith(isLoading: true);
+      await _TaskService.taskAdminReferenceUpdate(taskId: taskId, files: files);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to save profile: $e',
+      );
+      return false;
     }
   }
 }

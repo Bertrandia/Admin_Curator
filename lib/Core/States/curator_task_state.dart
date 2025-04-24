@@ -1,6 +1,4 @@
 import 'package:admin_curator/Models/curatorBill_model.dart';
-import 'package:admin_curator/Models/profile.dart';
-
 import '../../Models/comment.dart';
 import '../../Models/model_tasks.dart';
 
@@ -15,6 +13,7 @@ class TaskState {
   final CuratorBill? taskBill;
   final bool? isTaskBillCreated;
   final List<CuratorBill> curatorBills;
+  final Map<String, bool> actionLoaders;
 
   TaskState({
     this.selectedTask,
@@ -27,6 +26,7 @@ class TaskState {
     this.additionalBill,
     this.bill,
     this.isTaskBillCreated = false,
+    this.actionLoaders = const {},
   });
 
   TaskState copyWith({
@@ -40,7 +40,13 @@ class TaskState {
     CuratorBill? additionalBill,
     CuratorBill? taskBill,
     bool? isTaskBillCreated,
+    String? action,
+    bool? loading,
   }) {
+    Map<String, bool> newMap = Map<String, bool>.from(actionLoaders);
+    if (action != null && loading != null) {
+      newMap[action] = loading;
+    }
     return TaskState(
       listOfTasks: tasks ?? this.listOfTasks,
       isLoading: isLoading ?? this.isLoading,
@@ -52,6 +58,7 @@ class TaskState {
       curatorBills: curatorBills ?? this.curatorBills,
       taskBill: taskBill ?? this.taskBill,
       isTaskBillCreated: isTaskBillCreated ?? this.isTaskBillCreated,
+      actionLoaders: {},
     );
   }
 }

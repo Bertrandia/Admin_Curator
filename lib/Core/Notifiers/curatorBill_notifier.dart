@@ -1,8 +1,6 @@
 import 'package:admin_curator/Core/Services/curatorBill_service.dart';
 import 'package:admin_curator/Core/States/curator_task_state.dart';
-import 'package:admin_curator/Models/curatorBill_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CuratorBillNotifier extends StateNotifier<TaskState> {
@@ -135,20 +133,30 @@ class CuratorBillNotifier extends StateNotifier<TaskState> {
         curatorRef,
       );
 
-      final taskModel = await _curatorBillService.updateTaskBillStatus(
-        taskRef,
-        true,
-      );
+      try {
+        final taskModel = await _curatorBillService.updateTaskBillStatus(
+          taskRef,
+          true,
+        );
 
-      //
-      state = state.copyWith(
-        isLoading: false,
-        bill: billModel,
-        isTaskBillCreated: true,
-        selectedTask: taskModel,
-      );
+        //
+        state = state.copyWith(
+          isLoading: false,
+          bill: billModel,
+          isTaskBillCreated: true,
+          selectedTask: taskModel,
+        );
 
-      return true;
+        return true;
+      } catch (e) {
+        // Bill was created but status update failed
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage:
+              "Bill created but status update failed: ${e.toString()}",
+        );
+        return false;
+      }
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
       return false;
