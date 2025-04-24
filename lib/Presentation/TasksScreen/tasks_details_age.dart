@@ -8,6 +8,7 @@ import 'package:admin_curator/Models/profile.dart';
 import 'package:admin_curator/Presentation/Widgets/create_bill_component.dart';
 import 'package:admin_curator/Presentation/Widgets/custom_dropDown.dart';
 import 'package:admin_curator/Presentation/Widgets/taskUnassignReason.dart';
+import 'package:admin_curator/Presentation/Widgets/upload_photos.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,8 +19,6 @@ import '../../Models/comment.dart';
 import '../../Providers/providers.dart';
 import '../../Providers/textproviders.dart';
 import '../Widgets/asssign_pric_component.dart';
-import 'dart:html' as html;
-
 import '../Widgets/taskDisableDialog.dart';
 
 class TasksDetailsPAge extends ConsumerStatefulWidget {
@@ -98,7 +97,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
 
     print('Curator Bill State: ${curatorBillState.curatorBills}');
 
-    print('User Profile is empty : ${profileState.singleProfile?.fullName}');
+    print('User Profile is empty : ${profileState.singleProfile?.id}');
     final taskState = ref.watch(taskProvider);
 
     final comments = ref.watch(taskProvider).comments;
@@ -270,8 +269,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                       (taskState
                                               .selectedTask!
                                               .taskPriceByAdmin +
-                                          map['totalAmount']) ??
-                                      0,
+                                          map['totalAmount']),
                                   taskHours:
                                       taskState
                                           .selectedTask
@@ -425,7 +423,18 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                 );
 
                 if (updatedTask != null) {
-                  context.replace('/crm_tasks', extra: updatedTask);
+                  await ref
+                      .read(taskProvider.notifier)
+                      .notifyAllCurators(
+                        title: 'New Task ',
+                        body:
+                            'A new Task has been added.Click here to checkout',
+                        action: 'NEW_TASK_ADDED',
+                      )
+                      .then(
+                        (val) =>
+                            context.replace('/crm_tasks', extra: updatedTask),
+                      );
                 }
 
                 //  context.replace('/dashboard');
@@ -1398,31 +1407,43 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                           ),
                           SizedBox(height: 10),
 
-                          ElevatedButton(
-                            onPressed: () {
-                              FirebaseFirestore.instance
-                                  .collection('createTaskCollection')
-                                  .doc(widget.model.taskRef)
-                                  .update({
-                                    'curatorTaskStatus': 'Completed',
-                                    'paymentDueClearedTimeByAdmin':
-                                        Timestamp.now(),
-                                  })
-                                  .then((va) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Task Lifecycle completed',
+                          Visibility(
+                            visible:
+                                taskState.selectedTask?.isTaskBillCreated ==
+                                    true &&
+                                taskState.selectedTask?.curatorTaskStatus ==
+                                    'Completed',
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return Dialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: SizedBox(
+                                        height: 450,
+                                        child: UploadPhotosBills(
+                                          taskId:
+                                              taskState.selectedTask?.taskRef ??
+                                              '',
                                         ),
                                       ),
                                     );
-                                  });
-                            },
-                            child: Text('Complete Task Lifecycle'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: AppColors.secondary,
-                              elevation: 2,
+                                  },
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: AppColors.secondary,
+                                elevation: 2,
+                              ),
+                              child:
+                                  !(taskState.actionLoaders['cycleUpdate'] ??
+                                          false)
+                                      ? Text('Complete Task Lifecycle')
+                                      : CircularProgressIndicator(),
                             ),
                           ),
 

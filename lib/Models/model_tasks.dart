@@ -49,6 +49,7 @@ class TaskModel {
   String? locationMode;
   bool isAdminApproved;
   bool? isTaskBillCreated;
+  bool? paymentDueCleared;
 
   TaskModel({
     this.taskDocRef,
@@ -84,6 +85,7 @@ class TaskModel {
     required this.taskStatusCategory,
     required this.taskSubCategory,
     required this.taskSubject,
+    this.paymentDueCleared = false,
 
     // Newly Added Fields with Defaults
     this.curatorTaskStatus = "Pending",
@@ -168,6 +170,7 @@ class TaskModel {
               )
               .toList(),
       isTaskBillCreated: data['isTaskBillCreated'] ?? false,
+      paymentDueCleared: data['paymentDueCleared'] ?? false,
     );
   }
 
@@ -220,118 +223,120 @@ class TaskModel {
       'locationMode': locationMode,
       'listOfTaskTransferred':
           transferredTasks?.map((e) => e?.toMap()).toList(),
+      'paymentDueCleared': paymentDueCleared,
     };
   }
-
-  Map<String, dynamic> toJson() => {
-    'taskRef': taskRef,
-    'assignedLMName': assignedLMName,
-    'billingModel': billingModel,
-    'categoryTag': categoryTag,
-    'createdAt': createdAt.millisecondsSinceEpoch,
-    'createdBy': createdBy,
-    'isCockpitTaskCreated': isCockpitTaskCreated,
-    'isDelayed': isDelayed,
-    'isTaskDisabled': isTaskDisabled,
-    'patronName': patronName,
-    'patronAddress': patronAddress,
-    'priority': priority,
-    'refImage': refImage,
-    'remarks': remarks,
-    'selectedHomeCuratorDepartment': selectedHomeCuratorDepartment,
-    'taskAssignDate': taskAssignDate.millisecondsSinceEpoch,
-    'taskCategory': taskCategory,
-    'taskDate': taskDate.millisecondsSinceEpoch,
-    'taskDescription': taskDescription,
-    'taskDueDate': taskDueDate.millisecondsSinceEpoch,
-    'taskEndTime': taskEndTime.millisecondsSinceEpoch,
-    'taskID': taskID,
-    'taskOwner': taskOwner,
-    'taskRecievedTime': taskRecievedTime,
-    'taskStartTime': taskStartTime.millisecondsSinceEpoch,
-    'taskStatusCategory': taskStatusCategory,
-    'taskSubCategory': taskSubCategory,
-    'taskSubject': taskSubject,
-    'curatorTaskStatus': curatorTaskStatus,
-    'taskAssignedToCurator': taskAssignedToCurator,
-    'assignedTimeSlot': assignedTimeSlot,
-    'taskPriceByAdmin': taskPriceByAdmin,
-    'taskDurationByAdmin': taskDurationByAdmin,
-    'taskStartTimeByCurator': taskStartTimeByCurator?.millisecondsSinceEpoch,
-    'taskEndTimeByCurator': taskEndTimeByCurator?.millisecondsSinceEpoch,
-    'listOfImagesUploadedByCurator': listOfImagesUploadedByCurator,
-    'listOfVideosUploadedByCurator': listOfVideosUploadedByCurator,
-    'locationMode': locationMode,
-    'isAdminApproved': isAdminApproved,
-    'transferredTasks': transferredTasks?.map((e) => e?.toJson()).toList(),
-  };
-
-  factory TaskModel.fromJson(Map<String, dynamic> json) {
-    return TaskModel(
-      taskRef: json['taskRef'],
-      assignedLMName: json['assignedLMName'],
-      billingModel: json['billingModel'],
-      categoryTag: json['categoryTag'],
-      createdAt: Timestamp.fromMillisecondsSinceEpoch(json['createdAt']),
-      createdBy: json['createdBy'],
-      isCockpitTaskCreated: json['isCockpitTaskCreated'],
-      isDelayed: json['isDelayed'],
-      isTaskDisabled: json['isTaskDisabled'],
-      patronName: json['patronName'],
-      patronAddress: json['patronAddress'],
-      priority: json['priority'],
-      refImage: json['refImage'],
-      remarks: json['remarks'],
-      selectedHomeCuratorDepartment: json['selectedHomeCuratorDepartment'],
-      taskAssignDate: Timestamp.fromMillisecondsSinceEpoch(
-        json['taskAssignDate'],
-      ),
-      taskCategory: json['taskCategory'],
-      taskDate: Timestamp.fromMillisecondsSinceEpoch(json['taskDate']),
-      taskDescription: json['taskDescription'],
-      taskDueDate: Timestamp.fromMillisecondsSinceEpoch(json['taskDueDate']),
-      taskEndTime: Timestamp.fromMillisecondsSinceEpoch(json['taskEndTime']),
-      taskID: json['taskID'],
-      taskOwner: json['taskOwner'],
-      taskRecievedTime: json['taskRecievedTime'],
-      taskStartTime: Timestamp.fromMillisecondsSinceEpoch(
-        json['taskStartTime'],
-      ),
-      taskStatusCategory: json['taskStatusCategory'],
-      taskSubCategory: json['taskSubCategory'],
-      taskSubject: json['taskSubject'],
-      curatorTaskStatus: json['curatorTaskStatus'],
-      taskAssignedToCurator: json['taskAssignedToCurator'],
-      assignedTimeSlot: json['assignedTimeSlot'],
-      taskPriceByAdmin: (json['taskPriceByAdmin'] ?? 0.0).toDouble(),
-      taskDurationByAdmin: (json['taskDurationByAdmin'] ?? 0.0).toDouble(),
-      taskStartTimeByCurator:
-          json['taskStartTimeByCurator'] != null
-              ? Timestamp.fromMillisecondsSinceEpoch(
-                json['taskStartTimeByCurator'],
-              )
-              : null,
-      taskEndTimeByCurator:
-          json['taskEndTimeByCurator'] != null
-              ? Timestamp.fromMillisecondsSinceEpoch(
-                json['taskEndTimeByCurator'],
-              )
-              : null,
-      listOfImagesUploadedByCurator: List<String>.from(
-        json['listOfImagesUploadedByCurator'] ?? [],
-      ),
-      listOfVideosUploadedByCurator: List<String>.from(
-        json['listOfVideosUploadedByCurator'] ?? [],
-      ),
-      locationMode: json['locationMode'],
-      isAdminApproved: json['isAdminApproved'] ?? false,
-      transferredTasks:
-          (json['transferredTasks'] as List<dynamic>?)
-              ?.map((item) => TransferredTaskModel.fromJson(item))
-              .toList(),
-    );
-  }
 }
+//
+//   Map<String, dynamic> toJson() => {
+//     'taskRef': taskRef,
+//     'assignedLMName': assignedLMName,
+//     'billingModel': billingModel,
+//     'categoryTag': categoryTag,
+//     'createdAt': createdAt.millisecondsSinceEpoch,
+//     'createdBy': createdBy,
+//     'isCockpitTaskCreated': isCockpitTaskCreated,
+//     'isDelayed': isDelayed,
+//     'isTaskDisabled': isTaskDisabled,
+//     'patronName': patronName,
+//     'patronAddress': patronAddress,
+//     'priority': priority,
+//     'refImage': refImage,
+//     'remarks': remarks,
+//     'selectedHomeCuratorDepartment': selectedHomeCuratorDepartment,
+//     'taskAssignDate': taskAssignDate.millisecondsSinceEpoch,
+//     'taskCategory': taskCategory,
+//     'taskDate': taskDate.millisecondsSinceEpoch,
+//     'taskDescription': taskDescription,
+//     'taskDueDate': taskDueDate.millisecondsSinceEpoch,
+//     'taskEndTime': taskEndTime.millisecondsSinceEpoch,
+//     'taskID': taskID,
+//     'taskOwner': taskOwner,
+//     'taskRecievedTime': taskRecievedTime,
+//     'taskStartTime': taskStartTime.millisecondsSinceEpoch,
+//     'taskStatusCategory': taskStatusCategory,
+//     'taskSubCategory': taskSubCategory,
+//     'taskSubject': taskSubject,
+//     'curatorTaskStatus': curatorTaskStatus,
+//     'taskAssignedToCurator': taskAssignedToCurator,
+//     'assignedTimeSlot': assignedTimeSlot,
+//     'taskPriceByAdmin': taskPriceByAdmin,
+//     'taskDurationByAdmin': taskDurationByAdmin,
+//     'taskStartTimeByCurator': taskStartTimeByCurator?.millisecondsSinceEpoch,
+//     'taskEndTimeByCurator': taskEndTimeByCurator?.millisecondsSinceEpoch,
+//     'listOfImagesUploadedByCurator': listOfImagesUploadedByCurator,
+//     'listOfVideosUploadedByCurator': listOfVideosUploadedByCurator,
+//     'locationMode': locationMode,
+//     'isAdminApproved': isAdminApproved,
+//     'transferredTasks': transferredTasks?.map((e) => e?.toJson()).toList(),
+//   };
+//
+//   factory TaskModel.fromJson(Map<String, dynamic> json) {
+//     return TaskModel(
+//       taskRef: json['taskRef'],
+//       assignedLMName: json['assignedLMName'],
+//       billingModel: json['billingModel'],
+//       categoryTag: json['categoryTag'],
+//       createdAt: Timestamp.fromMillisecondsSinceEpoch(json['createdAt']),
+//       createdBy: json['createdBy'],
+//       isCockpitTaskCreated: json['isCockpitTaskCreated'],
+//       isDelayed: json['isDelayed'],
+//       isTaskDisabled: json['isTaskDisabled'],
+//       patronName: json['patronName'],
+//       patronAddress: json['patronAddress'],
+//       priority: json['priority'],
+//       refImage: json['refImage'],
+//       remarks: json['remarks'],
+//       selectedHomeCuratorDepartment: json['selectedHomeCuratorDepartment'],
+//       taskAssignDate: Timestamp.fromMillisecondsSinceEpoch(
+//         json['taskAssignDate'],
+//       ),
+//       taskCategory: json['taskCategory'],
+//       taskDate: Timestamp.fromMillisecondsSinceEpoch(json['taskDate']),
+//       taskDescription: json['taskDescription'],
+//       taskDueDate: Timestamp.fromMillisecondsSinceEpoch(json['taskDueDate']),
+//       taskEndTime: Timestamp.fromMillisecondsSinceEpoch(json['taskEndTime']),
+//       taskID: json['taskID'],
+//       taskOwner: json['taskOwner'],
+//       taskRecievedTime: json['taskRecievedTime'],
+//       taskStartTime: Timestamp.fromMillisecondsSinceEpoch(
+//         json['taskStartTime'],
+//       ),
+//       taskStatusCategory: json['taskStatusCategory'],
+//       taskSubCategory: json['taskSubCategory'],
+//       taskSubject: json['taskSubject'],
+//       curatorTaskStatus: json['curatorTaskStatus'],
+//       taskAssignedToCurator: json['taskAssignedToCurator'],
+//       assignedTimeSlot: json['assignedTimeSlot'],
+//       taskPriceByAdmin: (json['taskPriceByAdmin'] ?? 0.0).toDouble(),
+//       taskDurationByAdmin: (json['taskDurationByAdmin'] ?? 0.0).toDouble(),
+//       taskStartTimeByCurator:
+//           json['taskStartTimeByCurator'] != null
+//               ? Timestamp.fromMillisecondsSinceEpoch(
+//                 json['taskStartTimeByCurator'],
+//               )
+//               : null,
+//       taskEndTimeByCurator:
+//           json['taskEndTimeByCurator'] != null
+//               ? Timestamp.fromMillisecondsSinceEpoch(
+//                 json['taskEndTimeByCurator'],
+//               )
+//               : null,
+//       listOfImagesUploadedByCurator: List<String>.from(
+//         json['listOfImagesUploadedByCurator'] ?? [],
+//       ),
+//       listOfVideosUploadedByCurator: List<String>.from(
+//         json['listOfVideosUploadedByCurator'] ?? [],
+//       ),
+//       locationMode: json['locationMode'],
+//       isAdminApproved: json['isAdminApproved'] ?? false,
+//       transferredTasks:
+//           (json['transferredTasks'] as List<dynamic>?)
+//               ?.map((item) => TransferredTaskModel.fromJson(item))
+//               .toList(),
+//     );
+//   }
+// }
 
 class TransferredTaskModel {
   final String docID;
