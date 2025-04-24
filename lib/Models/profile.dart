@@ -131,6 +131,7 @@ class ProfileData {
   final String landline;
   final String aadhar;
   final String pan;
+  final String travelPreference;
   final List<String> listOfDocs;
   final List<String> availabilitySlots;
   final List<Education> higherEducation;
@@ -138,7 +139,6 @@ class ProfileData {
   final List<ImagesWithTitle> imagesWithTitle;
   final String departmentInterested;
   final List<String> selectedSkills;
-  final String travelPreference;
   final String dateOfAvailability;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -165,13 +165,13 @@ class ProfileData {
     required this.landline,
     required this.aadhar,
     required this.pan,
+    required this.travelPreference,
     required this.listOfDocs,
     required this.availabilitySlots,
     required this.higherEducation,
     required this.workExperience,
     required this.departmentInterested,
     required this.selectedSkills,
-    required this.travelPreference,
     required this.dateOfAvailability,
     required this.imagesWithTitle,
     required this.createdAt,
@@ -200,6 +200,7 @@ class ProfileData {
       'landline': landline,
       'aadhar': aadhar,
       'pan': pan,
+      'travelPreference': travelPreference,
       'listOfDocs': listOfDocs,
       'higherEducation': higherEducation.map((e) => e.toMap()).toList(),
       'workExperience': workExperience.map((e) => e.toMap()).toList(),
@@ -236,8 +237,9 @@ class ProfileData {
       landline: map['landline'] ?? '',
       aadhar: map['aadhar'] ?? '',
       pan: map['pan'] ?? '',
+      travelPreference: map['travelPreference'] ?? '',
       listOfDocs: List<String>.from(map['listOfDocs'] ?? []),
-      availabilitySlots: List<String>.from(map['availabilitySlots'] ?? []),
+      availabilitySlots: List<String>.from(map['availabilitySlots']?? []),
       imagesWithTitle:
           (map['imagesWithTitle'] as List<dynamic>?)
               ?.map((e) => ImagesWithTitle.fromMap(e as Map<String, dynamic>))

@@ -51,18 +51,24 @@ class TasksNotifier extends StateNotifier<TaskState> {
       //     "Patron Name,Assigned LM,Created At,AI Category,AI SubCategory,AI TAG,Category,SubCategory,Category Tag,Assign Date,Assign Date Time,Due Date,Due Date Time,Description,Status Category,Last Comment,Subject,Billing Model,Co Owner,In Process Date,On-Hold Date,Completed Date,Cancelled Date,Priority,Task Open Days,Days Remaining,Delayed,Task ID, Created By,ExtraOrdinary Score,Insights and Approach of Execution,Proactiveness Score,Values Score,Timeliness Score, LM Perception";
 
       String fileContent =
-          "Task ID,Task Reference,Task Category,Task Sub Category,Task Subject,Task Description,Remarks,Priority,Task Status Category,"
-          "Task Assign Date,Task Start Time,Task End Time,Task Due Date,Task Received Time,Task Date,"
-          "Assigned LM Name,Backup LM Reference,LM Reference,Created By,Created At,Is Cockpit Task Created,Is Delayed,Is Task Disabled,"
-          "Patron Name,Patron Address,Patron Reference,"
-          "Selected Home Curator Department,Selected Home Curator Department Reference,Curator Task Status,Task Assigned To Curator,Assigned Time Slot,"
-          "Task Owner,Billing Model,Category Tag,Reference Image,"
+          "Task ID,Task Category,Task Sub Category,Category Tag,Task Subject,Task Description,Remarks,Priority,Task Status Category,"
+          "Task Assign Date,Task Due Date,Task Start Time,Task End Time,Task Received Time,Task Date,"
+          "Assigned LM Name,Created By,Created At,Is Cockpit Task Created,Is Delayed,Is Task Disabled,"
+          "Patron Name,Patron Address,"
+          "Selected Home Curator Department,Curator Task Status,Assigned Time Slot,"
+          "Task Owner,Billing Model,Reference Image,"
           "Task Price By Admin,Task Duration By Admin,Task Start Time By Curator,Task End Time By Curator,"
           "List Of Images Uploaded By Curator,List Of Videos Uploaded By Curator,Location Mode,Is Admin Approved";
 
       String formatCsvField(dynamic field) {
         if (field == null) return '""';
+
+        if (field is Timestamp) {
+          field = field.toDate(); // Convert Firestore Timestamp to DateTime
+        }
+
         String stringField = field.toString();
+
         if (field is DateTime) {
           stringField = DateFormat('dd/MM/yyyy').format(field);
         }
@@ -95,11 +101,11 @@ class TasksNotifier extends StateNotifier<TaskState> {
             "\n" +
             formatCsvField(record.taskID) +
             "," +
-            formatCsvField(record.taskRef) +
-            "," +
             formatCsvField(record.taskCategory) +
             "," +
             formatCsvField(record.taskSubCategory) +
+            "," +
+            formatCsvField(record.categoryTag) +
             "," +
             formatCsvField(record.taskSubject) +
             "," +
@@ -113,21 +119,17 @@ class TasksNotifier extends StateNotifier<TaskState> {
             "," +
             formatCsvField(record.taskAssignDate) +
             "," +
+            formatCsvField(record.taskDueDate) +
+            "," +
             formatCsvFieldWithTime(record.taskStartTime) +
             "," +
             formatCsvFieldWithTime(record.taskEndTime) +
-            "," +
-            formatCsvField(record.taskDueDate) +
             "," +
             formatCsvField(record.taskRecievedTime) +
             "," +
             formatCsvField(record.taskDate) +
             "," +
             formatCsvField(record.assignedLMName) +
-            "," +
-            formatCsvField(record.backupLmRef) +
-            "," +
-            formatCsvField(record.lmRef) +
             "," +
             formatCsvField(record.createdBy) +
             "," +
@@ -143,23 +145,17 @@ class TasksNotifier extends StateNotifier<TaskState> {
             "," +
             formatCsvField(record.patronAddress) +
             "," +
-            formatCsvField(record.patronRef) +
-            "," +
             formatCsvField(record.selectedHomeCuratorDepartment) +
             "," +
-            formatCsvField(record.selectedHomeCuratorDepartmentRef) +
-            "," +
             formatCsvField(record.curatorTaskStatus) +
-            "," +
-            formatCsvField(record.taskAssignedToCurator) +
+            // "," +
+            // formatCsvField(record.taskAssignedToCurator) +
             "," +
             formatCsvField(record.assignedTimeSlot) +
             "," +
             formatCsvField(record.taskOwner) +
             "," +
             formatCsvField(record.billingModel) +
-            "," +
-            formatCsvField(record.categoryTag) +
             "," +
             formatCsvField(record.refImage) +
             "," +
