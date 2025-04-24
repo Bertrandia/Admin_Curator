@@ -40,6 +40,11 @@ final tasksNotifierProvider = StateNotifierProvider<TasksNotifier, TaskState>((
   return TasksNotifier(tasksService);
 });
 
+
+final profileServiceProvider = Provider<ProfileService>((ref) {
+  return ProfileService();
+});
+
 final selectedChipProvider = StateProvider<String>((ref) => 'All');
 final selectedChoicCuratorChipProvider = StateProvider<String>(
   (ref) => 'Active',
