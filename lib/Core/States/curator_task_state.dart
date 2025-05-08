@@ -14,7 +14,7 @@ class TaskState {
   final bool? isTaskBillCreated;
   final List<CuratorBill> curatorBills;
   final Map<String, bool> actionLoaders;
-
+  final List<TaskModel> listOfCompletedTasks;
   TaskState({
     this.selectedTask,
     required this.listOfTasks,
@@ -27,6 +27,7 @@ class TaskState {
     this.bill,
     this.isTaskBillCreated = false,
     this.actionLoaders = const {},
+    this.listOfCompletedTasks = const [],
   });
 
   TaskState copyWith({
@@ -42,6 +43,7 @@ class TaskState {
     bool? isTaskBillCreated,
     String? action,
     bool? loading,
+    List<TaskModel>? listOfCompletedTasks,
   }) {
     Map<String, bool> newMap = Map<String, bool>.from(actionLoaders);
     if (action != null && loading != null) {
@@ -59,6 +61,7 @@ class TaskState {
       taskBill: taskBill ?? this.taskBill,
       isTaskBillCreated: isTaskBillCreated ?? this.isTaskBillCreated,
       actionLoaders: {},
+      listOfCompletedTasks: listOfCompletedTasks ?? this.listOfCompletedTasks,
     );
   }
 }

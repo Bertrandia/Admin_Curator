@@ -81,13 +81,16 @@ class _UploadPhotosBillsState extends ConsumerState<UploadPhotosBills> {
                         ),
                       );
                     } else if (task?.curatorTaskStatus == "Completed") {
-                      if (files.isNotEmpty && actualTime != null) {
-                        await ref
-                            .read(taskProvider.notifier)
+                      if (files.isNotEmpty) {
+                        final tasksNotifier = ref.read(taskProvider.notifier);
+                        await tasksNotifier
                             .updateTaskLifecycle(
                               taskRef: taskState.selectedTask!.taskDocRef!,
                             )
                             .then((val) {
+                              tasksNotifier.updateSelectedTaskPaymentStatus(
+                                true,
+                              );
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(

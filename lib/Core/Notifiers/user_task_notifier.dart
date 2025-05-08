@@ -12,6 +12,12 @@ class CuratorTaskNotifier extends StateNotifier<TaskState> {
     fetchTasks();
   }
 
+  void getPaymentPendingTasks() async {
+    _TaskService.getPaymentPendingTasks().listen((tasks) {
+      state = state.copyWith(isLoading: false, listOfCompletedTasks: tasks);
+    });
+  }
+
   void fetchTasks() async {
     _TaskService.getTasksWithCuratorsStream().listen((tasks) {
       state = state.copyWith(isLoading: false, tasks: tasks);
@@ -121,6 +127,12 @@ class CuratorTaskNotifier extends StateNotifier<TaskState> {
         errorMessage: 'Failed to Accept: $e',
       );
       return false;
+    }
+  }
+
+  void updateSelectedTaskPaymentStatus(bool status) {
+    if (state.selectedTask != null) {
+      state.selectedTask?.paymentDueCleared = true;
     }
   }
 

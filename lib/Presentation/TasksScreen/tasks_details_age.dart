@@ -125,271 +125,322 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                   const SizedBox(width: 8),
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Task',
-                        style: TextStyle(
-                          fontSize: 20,
+                        style: AppStyles.style20.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFAA4400),
+                          fontSize: 24,
                         ),
                       ),
                     ],
                   ),
                   Spacer(),
                   taskState.selectedTask?.isTaskDisabled == false
-                      ? ElevatedButton(
-                        onPressed: () {
-                          final String userEmail =
-                              authState.user?.email ?? "Unknown User";
-                          showDialog(
-                            context: context,
-                            builder:
-                                (context) => DisabledDialog(
-                                  userEmail: userEmail,
-                                  taskID: taskState.selectedTask?.taskRef ?? '',
-                                  ref: ref,
-                                  tasksNotifier: ref.read(
-                                    taskProvider.notifier,
+                      ? Visibility(
+                        visible:
+                            taskState.selectedTask?.paymentDueCleared == false,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final String userEmail =
+                                authState.user?.email ?? "Unknown User";
+                            showDialog(
+                              context: context,
+                              builder:
+                                  (context) => DisabledDialog(
+                                    userEmail: userEmail,
+                                    taskID:
+                                        taskState.selectedTask?.taskRef ?? '',
+                                    ref: ref,
+                                    tasksNotifier: ref.read(
+                                      taskProvider.notifier,
+                                    ),
                                   ),
-                                ),
-                          );
-                        },
-                        child: Text('Disable Task'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: AppColors.secondary,
-                          elevation: 2,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: AppColors.secondary,
+                            elevation: 2,
+                          ),
+                          child: Text(
+                            'Disable Task',
+                            style: AppStyles.style20.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: AppColors.white,
+                            ),
+                          ),
                         ),
                       )
-                      : ElevatedButton(
-                        onPressed: () {
-                          ref
-                              .read(taskProvider.notifier)
-                              .updateTaskVisiblity(
-                                isTaskDisabled: false,
-                                taskId: widget.model.taskRef,
-                                reason: "",
-                              );
-                        },
-                        child: Text('Enable Task'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: AppColors.secondary,
-                          elevation: 2,
+                      : Visibility(
+                        visible:
+                            taskState.selectedTask?.paymentDueCleared == false,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            ref
+                                .read(taskProvider.notifier)
+                                .updateTaskVisiblity(
+                                  isTaskDisabled: false,
+                                  taskId: widget.model.taskRef,
+                                  reason: "",
+                                );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: AppColors.secondary,
+                            elevation: 2,
+                          ),
+                          child: Text(
+                            'Enable Task',
+                            style: AppStyles.style20.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.white,
+                              fontSize: 18,
+                            ),
+                          ),
                         ),
                       ),
                   SizedBox(width: 5),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (taskState.selectedTask?.isTaskDisabled == false) {
-                        final curatorRef = FirebaseFirestore.instance
-                            .collection(
-                              FirebaseCollections.consultantCollection,
-                            )
-                            .doc(profileState.singleProfile!.id);
-                        final taskRef = FirebaseFirestore.instance
-                            .collection(
-                              FirebaseCollections.createTaskCollection,
-                            )
-                            .doc(taskState.selectedTask!.taskRef);
+                  Visibility(
+                    visible: taskState.selectedTask?.paymentDueCleared == false,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (taskState.selectedTask?.isTaskDisabled == false) {
+                          final curatorRef = FirebaseFirestore.instance
+                              .collection(
+                                FirebaseCollections.consultantCollection,
+                              )
+                              .doc(profileState.singleProfile!.id);
+                          final taskRef = FirebaseFirestore.instance
+                              .collection(
+                                FirebaseCollections.createTaskCollection,
+                              )
+                              .doc(taskState.selectedTask!.taskRef);
 
-                        if (taskState.selectedTask?.isTaskBillCreated ==
-                            false) {
-                          await ref
-                              .read(curatorBillProvider.notifier)
-                              .getAdditionalBill(taskRef: taskRef);
-                          final taskStateBill = ref.watch(curatorBillProvider);
-                          final additionalBill = taskStateBill.additionalBill;
-
-                          if (additionalBill != null) {
-                            final map = additionalBill.toFirestore();
-                            // print(map);
-                            List<Map<String, dynamic>> item = [];
-                            final actualValues = {
-                              'task': taskState.selectedTask?.taskSubject,
-
-                              'description':
-                                  taskState.selectedTask?.taskDescription,
-
-                              'taskHours':
-                                  taskState.selectedTask?.taskDurationByAdmin,
-
-                              'taskPrice':
-                                  taskState.selectedTask?.taskPriceByAdmin,
-
-                              'date': DateFormat('dd MMM yyyy, hh:mm a').format(
-                                taskState.selectedTask?.taskDate.toDate() ??
-                                    Timestamp.now().toDate(),
-                              ),
-
-                              'totalAmount':
-                                  taskState.selectedTask?.taskPriceByAdmin,
-                            };
-                            print(map['taskHours'].runtimeType);
-                            print(map['taskPrice'].runtimeType);
-                            final mapping = {
-                              'task': taskState.selectedTask?.taskSubject,
-
-                              'description': map['invoiceDescription'],
-
-                              'taskHours': _parseToDouble(map['taskHours']),
-
-                              'taskPrice': _parseToDouble(map['taskPrice']),
-
-                              'date': DateFormat('dd MMM yyyy, hh:mm a').format(
-                                taskState.selectedTask?.taskDate.toDate() ??
-                                    Timestamp.now().toDate(),
-                              ),
-
-                              'totalAmount': _parseToDouble(map['totalAmount']),
-                            };
-                            item.add(mapping);
-                            item.add(actualValues);
+                          if (taskState.selectedTask?.isTaskBillCreated ==
+                              false) {
                             await ref
                                 .read(curatorBillProvider.notifier)
-                                .createTaskBill(
-                                  fileName:
-                                      '${profileState.singleProfile?.fullName}_${taskState.selectedTask?.taskSubject}_${taskState.selectedTask?.taskRef}',
-                                  vendorName: 'Pinch Lifestyle Pvt Ltd.',
-                                  invoiceNumber: getRandomString(10),
-                                  invoiceDate: DateFormat(
-                                    'yyyy-MM-dd',
-                                  ).format(DateTime.now()),
-                                  soldTo:
-                                      profileState.singleProfile?.fullName ??
-                                      '',
-                                  items: item,
+                                .getAdditionalBill(taskRef: taskRef);
+                            final taskStateBill = ref.watch(
+                              curatorBillProvider,
+                            );
+                            final additionalBill = taskStateBill.additionalBill;
 
-                                  taskRef: taskRef,
-                                  curatorRef: curatorRef,
-                                  invoiceDescription:
-                                      taskState.selectedTask?.taskDescription ??
-                                      '',
-                                  totalAmount:
-                                      (taskState
-                                              .selectedTask!
-                                              .taskPriceByAdmin +
-                                          map['totalAmount']),
-                                  taskHours:
-                                      taskState
-                                          .selectedTask
-                                          ?.taskDurationByAdmin ??
-                                      0.0,
-                                  taskPrice:
-                                      taskState
-                                          .selectedTask
-                                          ?.taskPriceByAdmin ??
-                                      0.0,
-                                );
+                            if (additionalBill != null) {
+                              final map = additionalBill.toFirestore();
+                              // print(map);
+                              List<Map<String, dynamic>> item = [];
+                              final actualValues = {
+                                'task': taskState.selectedTask?.taskSubject,
 
-                            await ref
-                                .read(taskProvider.notifier)
-                                .updateTaskBillStatus(
-                                  isTaskBillCreated: true,
-                                  taskId: taskState.selectedTask?.taskRef ?? '',
-                                )
-                                .then((val) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Bill created succesfully.',
-                                      ),
-                                    ),
+                                'description':
+                                    taskState.selectedTask?.taskDescription,
+
+                                'taskHours':
+                                    taskState.selectedTask?.taskDurationByAdmin,
+
+                                'taskPrice':
+                                    taskState.selectedTask?.taskPriceByAdmin,
+
+                                'date': DateFormat(
+                                  'dd MMM yyyy, hh:mm a',
+                                ).format(
+                                  taskState.selectedTask?.taskDate.toDate() ??
+                                      Timestamp.now().toDate(),
+                                ),
+
+                                'totalAmount':
+                                    taskState.selectedTask?.taskPriceByAdmin,
+                              };
+                              print(map['taskHours'].runtimeType);
+                              print(map['taskPrice'].runtimeType);
+                              final mapping = {
+                                'task': taskState.selectedTask?.taskSubject,
+
+                                'description': map['invoiceDescription'],
+
+                                'taskHours': _parseToDouble(map['taskHours']),
+
+                                'taskPrice': _parseToDouble(map['taskPrice']),
+
+                                'date': DateFormat(
+                                  'dd MMM yyyy, hh:mm a',
+                                ).format(
+                                  taskState.selectedTask?.taskDate.toDate() ??
+                                      Timestamp.now().toDate(),
+                                ),
+
+                                'totalAmount': _parseToDouble(
+                                  map['totalAmount'],
+                                ),
+                              };
+                              item.add(mapping);
+                              item.add(actualValues);
+                              await ref
+                                  .read(curatorBillProvider.notifier)
+                                  .createTaskBill(
+                                    fileName:
+                                        '${profileState.singleProfile?.fullName}_${taskState.selectedTask?.taskSubject}_${taskState.selectedTask?.taskRef}',
+                                    vendorName: 'Pinch Lifestyle Pvt Ltd.',
+                                    invoiceNumber: getRandomString(10),
+                                    invoiceDate: DateFormat(
+                                      'yyyy-MM-dd',
+                                    ).format(DateTime.now()),
+                                    soldTo:
+                                        profileState.singleProfile?.fullName ??
+                                        '',
+                                    items: item,
+
+                                    taskRef: taskRef,
+                                    curatorRef: curatorRef,
+                                    invoiceDescription:
+                                        taskState
+                                            .selectedTask
+                                            ?.taskDescription ??
+                                        '',
+                                    totalAmount:
+                                        (taskState
+                                                .selectedTask!
+                                                .taskPriceByAdmin +
+                                            map['totalAmount']),
+                                    taskHours:
+                                        taskState
+                                            .selectedTask
+                                            ?.taskDurationByAdmin ??
+                                        0.0,
+                                    taskPrice:
+                                        taskState
+                                            .selectedTask
+                                            ?.taskPriceByAdmin ??
+                                        0.0,
                                   );
-                                });
+
+                              await ref
+                                  .read(taskProvider.notifier)
+                                  .updateTaskBillStatus(
+                                    isTaskBillCreated: true,
+                                    taskId:
+                                        taskState.selectedTask?.taskRef ?? '',
+                                  )
+                                  .then((val) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Bill created succesfully.',
+                                        ),
+                                      ),
+                                    );
+                                  });
+                            } else {
+                              print('additionalBill is Null');
+                              await ref
+                                  .read(curatorBillProvider.notifier)
+                                  .createTaskBill(
+                                    fileName:
+                                        '${profileState.singleProfile?.fullName}_${widget.model.taskSubject}_${DateTime.now()}',
+                                    vendorName: 'Pinch Lifestyle Pvt Ltd.',
+                                    invoiceNumber: getRandomString(10),
+                                    invoiceDate: DateFormat(
+                                      'yyyy-MM-dd',
+                                    ).format(DateTime.now()),
+                                    soldTo:
+                                        profileState.singleProfile?.fullName ??
+                                        '',
+                                    items: [
+                                      {
+                                        'task': widget.model.taskSubject,
+
+                                        'description':
+                                            widget.model.taskDescription,
+
+                                        'taskHours':
+                                            widget.model.taskDurationByAdmin,
+
+                                        'taskPrice':
+                                            widget.model.taskPriceByAdmin,
+
+                                        'date': DateFormat(
+                                          'dd MMM yyyy, hh:mm a',
+                                        ).format(
+                                          widget.model.taskDate.toDate(),
+                                        ),
+
+                                        'totalAmount':
+                                            widget.model.taskPriceByAdmin,
+                                      },
+                                    ],
+                                    taskRef: widget.model.taskDocRef!,
+                                    curatorRef: curatorRef,
+                                    invoiceDescription:
+                                        widget.model.taskDescription,
+                                    totalAmount: widget.model.taskPriceByAdmin,
+                                    taskHours:
+                                        taskState
+                                            .selectedTask
+                                            ?.taskDurationByAdmin ??
+                                        0.0,
+                                    taskPrice:
+                                        taskState
+                                            .selectedTask
+                                            ?.taskPriceByAdmin ??
+                                        0.0,
+                                  );
+
+                              await ref
+                                  .read(taskProvider.notifier)
+                                  .updateTaskBillStatus(
+                                    isTaskBillCreated: true,
+                                    taskId:
+                                        taskState.selectedTask?.taskRef ?? '',
+                                  )
+                                  .then((val) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Bill created succesfully.',
+                                        ),
+                                      ),
+                                    );
+                                  });
+                            }
                           } else {
-                            print('additionalBill is Null');
-                            await ref
-                                .read(curatorBillProvider.notifier)
-                                .createTaskBill(
-                                  fileName:
-                                      '${profileState.singleProfile?.fullName}_${widget.model.taskSubject}_${DateTime.now()}',
-                                  vendorName: 'Pinch Lifestyle Pvt Ltd.',
-                                  invoiceNumber: getRandomString(10),
-                                  invoiceDate: DateFormat(
-                                    'yyyy-MM-dd',
-                                  ).format(DateTime.now()),
-                                  soldTo:
-                                      profileState.singleProfile?.fullName ??
-                                      '',
-                                  items: [
-                                    {
-                                      'task': widget.model.taskSubject,
-
-                                      'description':
-                                          widget.model.taskDescription,
-
-                                      'taskHours':
-                                          widget.model.taskDurationByAdmin,
-
-                                      'taskPrice':
-                                          widget.model.taskPriceByAdmin,
-
-                                      'date': DateFormat(
-                                        'dd MMM yyyy, hh:mm a',
-                                      ).format(widget.model.taskDate.toDate()),
-
-                                      'totalAmount':
-                                          widget.model.taskPriceByAdmin,
-                                    },
-                                  ],
-                                  taskRef: widget.model.taskDocRef!,
-                                  curatorRef: curatorRef,
-                                  invoiceDescription:
-                                      widget.model.taskDescription,
-                                  totalAmount: widget.model.taskPriceByAdmin,
-                                  taskHours:
-                                      taskState
-                                          .selectedTask
-                                          ?.taskDurationByAdmin ??
-                                      0.0,
-                                  taskPrice:
-                                      taskState
-                                          .selectedTask
-                                          ?.taskPriceByAdmin ??
-                                      0.0,
-                                );
-
-                            await ref
-                                .read(taskProvider.notifier)
-                                .updateTaskBillStatus(
-                                  isTaskBillCreated: true,
-                                  taskId: taskState.selectedTask?.taskRef ?? '',
-                                )
-                                .then((val) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Bill created succesfully.',
-                                      ),
-                                    ),
-                                  );
-                                });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Bill is already created, please reject the current bill to make new bill.',
+                                ),
+                              ),
+                            );
                           }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Bill is already created, please reject the current bill to make new bill.',
+                                'Task is disabled, cannot create the bill, Please enable the task to create bill',
                               ),
                             ),
                           );
                         }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Task is disabled, cannot create the bill, Please enable the task to create bill',
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    child: Text('Create Task Bill'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: AppColors.secondary,
-                      elevation: 2,
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.secondary,
+                        elevation: 2,
+                      ),
+                      child:
+                          taskState.isLoading == false
+                              ? Text(
+                                'Create Task Bill',
+                                style: AppStyles.style20.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.white,
+                                  fontSize: 18,
+                                ),
+                              )
+                              : CircularProgressIndicator(
+                                color: AppColors.white,
+                              ),
                     ),
                   ),
                 ],
@@ -400,6 +451,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
               onAssignPressed: onAssignedPrice,
               taskID: widget.model.taskRef,
               header: 'Assign Task to curator',
+
               selectedItem:
                   profileState.singleProfile?.fullName ?? 'NO Assigned',
               items:
@@ -450,9 +502,13 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 "Unassign",
-                style: TextStyle(color: AppColors.secondary),
+                style: AppStyles.style20.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.white,
+                  fontSize: 18,
+                ),
               ),
             ),
             // Content
@@ -483,48 +539,93 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                     children: [
                                       Text(
                                         'Task Details',
-                                        style: TextStyle(
-                                          fontSize: 18,
+                                        style: AppStyles.style20.copyWith(
                                           fontWeight: FontWeight.bold,
                                           color: AppColors.primary,
+                                          fontSize: 14,
                                         ),
                                       ),
                                       Spacer(),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          showAssignPriceDialog(
-                                            context,
-                                            ref,
-                                            taskState.selectedTask?.taskRef ??
-                                                '',
-                                            taskState
-                                                    .selectedTask
-                                                    ?.taskSubject ??
-                                                'No Subject Avialable',
-                                            taskState
-                                                    .selectedTask
-                                                    ?.taskDescription ??
-                                                'No Description Available',
-                                            taskState
-                                                    .selectedTask
-                                                    ?.assignedTimeSlot ??
-                                                'No Time Slot Available',
-                                            taskState
-                                                    .selectedTask
-                                                    ?.locationMode ??
-                                                'NA',
-                                            taskState
-                                                .selectedTask!
-                                                .taskPriceByAdmin,
+                                      Visibility(
+                                        visible:
                                             taskState
                                                 .selectedTask
-                                                ?.taskDurationByAdmin,
-                                          );
-                                        },
-                                        child: Text('Assign Price'),
+                                                ?.paymentDueCleared ==
+                                            false,
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            showAssignPriceDialog(
+                                              context,
+                                              ref,
+                                              taskState.selectedTask?.taskRef ??
+                                                  '',
+                                              taskState
+                                                      .selectedTask
+                                                      ?.taskSubject ??
+                                                  'No Subject Avialable',
+                                              taskState
+                                                      .selectedTask
+                                                      ?.taskDescription ??
+                                                  'No Description Available',
+                                              taskState
+                                                      .selectedTask
+                                                      ?.assignedTimeSlot ??
+                                                  'No Time Slot Available',
+                                              taskState
+                                                      .selectedTask
+                                                      ?.locationMode ??
+                                                  'NA',
+                                              taskState
+                                                  .selectedTask!
+                                                  .taskPriceByAdmin,
+                                              taskState
+                                                  .selectedTask
+                                                  ?.taskDurationByAdmin,
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary,
+                                            foregroundColor:
+                                                AppColors.secondary,
+                                          ),
+                                          child: Text(
+                                            'Assign Price',
+                                            style: AppStyles.style20.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.white,
+                                              fontSize: 18,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () {},
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.primary,
+                                          backgroundColor:
+                                              taskState
+                                                          .selectedTask
+                                                          ?.curatorTaskStatus ==
+                                                      'Completed'
+                                                  ? Colors.green
+                                                  : Colors.yellow.shade800,
                                           foregroundColor: AppColors.secondary,
+                                        ),
+                                        child: Text(
+                                          taskState
+                                                  .selectedTask
+                                                  ?.curatorTaskStatus ??
+                                              '',
+                                          style: AppStyles.style20.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                            fontSize: 14,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -549,9 +650,10 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                   .selectedTask
                                                   ?.selectedHomeCuratorDepartment ??
                                               'Not Available',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
+                                          style: AppStyles.style20.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.white,
+                                            fontSize: 18,
                                           ),
                                         ),
                                       ),
@@ -663,10 +765,10 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                   // Patron Details
                                   Text(
                                     'Patron Details',
-                                    style: TextStyle(
-                                      fontSize: 18,
+                                    style: AppStyles.style20.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFFAA4400),
+                                      color: AppColors.primary,
+                                      fontSize: 23,
                                     ),
                                   ),
                                   const SizedBox(height: 16),
@@ -705,10 +807,10 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                   const SizedBox(height: 16),
                                   Text(
                                     'Curator Details',
-                                    style: TextStyle(
-                                      fontSize: 18,
+                                    style: AppStyles.style20.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFFAA4400),
+                                      color: AppColors.primary,
+                                      fontSize: 23,
                                     ),
                                   ),
                                   SizedBox(height: 16),
@@ -747,17 +849,18 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                             SizedBox(height: 10),
                             Text(
                               'Task Images',
-                              style: TextStyle(
-                                fontSize: 18,
+                              style: AppStyles.style20.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFFAA4400),
+                                color: AppColors.primary,
+                                fontSize: 23,
                               ),
                             ),
-                            const Text(
+                            Text(
                               ' Uploaded photos highlighting the tasks performed and the progress made will be shown below',
-                              style: TextStyle(
-                                fontSize: 14,
+                              style: AppStyles.style20.copyWith(
+                                fontWeight: FontWeight.bold,
                                 color: Colors.black87,
+                                fontSize: 16,
                               ),
                             ),
                             SizedBox(height: 5),
@@ -777,9 +880,10 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                             SizedBox(height: 10),
                             Text(
                               'Transferred Tasks',
-                              style: TextStyle(
-                                fontSize: 24,
-                                color: Colors.black87,
+                              style: AppStyles.style20.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                                fontSize: 23,
                               ),
                             ),
                             SizedBox(height: 5),
@@ -860,6 +964,15 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                       const SizedBox(width: 16),
                       Column(
                         children: [
+                          if (taskState.selectedTask?.paymentDueCleared == true)
+                            Text(
+                              'Payment is cleared! This task has been closed.',
+                              style: AppStyles.style20.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                                fontSize: 25,
+                              ),
+                            ),
                           Container(
                             width: 450,
                             color: Colors.grey,
@@ -880,11 +993,11 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                           children: [
                                             Text(
                                               'Comments',
-                                              style: AppStyles.subHeading
-                                                  .copyWith(
-                                                    color: AppColors.white,
-                                                    fontSize: 18,
-                                                  ),
+                                              style: AppStyles.style20.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColors.white,
+                                                fontSize: 22,
+                                              ),
                                             ),
                                             const SizedBox(width: 8),
                                             Container(
@@ -1154,7 +1267,12 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                               SizedBox(),
                               Text(
                                 'Curator Bills',
-                                style: TextStyle(fontSize: 30),
+                                style: AppStyles.style20.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+
+                                  fontSize: 24,
+                                ),
                               ),
                               SizedBox(width: 30),
                               InkWell(
@@ -1196,7 +1314,7 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                   }
                                 },
                                 child: Tooltip(
-                                  message: 'Add new Bill',
+                                  message: 'Add new addition bill',
                                   child: Container(
                                     width: 30,
                                     height: 30,
@@ -1356,6 +1474,9 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                                                           billId:
                                                                               curatorBillState.curatorBills[index].billDocRef!,
                                                                         );
+                                                                    taskState
+                                                                        .selectedTask
+                                                                        ?.isTaskBillCreated = false;
                                                                   }
                                                                 }
                                                               },
@@ -1412,7 +1533,9 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                                 taskState.selectedTask?.isTaskBillCreated ==
                                     true &&
                                 taskState.selectedTask?.curatorTaskStatus ==
-                                    'Completed',
+                                    'Completed' &&
+                                taskState.selectedTask?.paymentDueCleared ==
+                                    false,
                             child: ElevatedButton(
                               onPressed: () async {
                                 showDialog(
@@ -1442,7 +1565,14 @@ class _CuratorProfilesState extends ConsumerState<TasksDetailsPAge> {
                               child:
                                   !(taskState.actionLoaders['cycleUpdate'] ??
                                           false)
-                                      ? Text('Complete Task Lifecycle')
+                                      ? Text(
+                                        'Complete Task Lifecycle',
+                                        style: AppStyles.style20.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.white,
+                                          fontSize: 18,
+                                        ),
+                                      )
                                       : CircularProgressIndicator(),
                             ),
                           ),
@@ -1599,9 +1729,10 @@ Widget _buildCommentItem({
               const SizedBox(width: 8),
               Text(
                 name,
-                style: TextStyle(
+                style: AppStyles.style20.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepOrange[800],
+                  color: AppColors.primary,
+                  fontSize: 18,
                 ),
               ),
             ],
@@ -1663,18 +1794,25 @@ class DetailRow extends StatelessWidget {
           isMultiLine ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: [
         SizedBox(
-          width: 120,
+          width: 130,
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
+            style: AppStyles.style20.copyWith(
               fontWeight: FontWeight.bold,
-              color: label == 'Priority' ? this.color : color,
+              color: AppColors.primary,
+              fontSize: 13,
             ),
           ),
         ),
         Expanded(
-          child: Text(value, style: TextStyle(fontSize: 14, color: color)),
+          child: Text(
+            value,
+            style: AppStyles.style20.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color,
+              fontSize: 16,
+            ),
+          ),
         ),
       ],
     );

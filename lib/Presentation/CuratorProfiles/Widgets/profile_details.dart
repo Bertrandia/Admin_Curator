@@ -1,5 +1,5 @@
-import 'dart:html' as html;
 import 'package:admin_curator/Constants/URls.dart';
+import 'package:admin_curator/Constants/app_styles.dart';
 import 'package:admin_curator/Models/profile.dart';
 import 'package:admin_curator/Presentation/CuratorProfiles/Widgets/rejectionRandomSheet.dart';
 import 'package:admin_curator/Presentation/Widgets/global_btn.dart';
@@ -7,9 +7,6 @@ import 'package:admin_curator/Providers/providers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
-
 import '../../../Constants/app_colors.dart';
 
 class ProfileDetailsPage extends ConsumerStatefulWidget {
@@ -121,6 +118,10 @@ class _ProfileDetailsPageState extends ConsumerState<ProfileDetailsPage> {
                     profileState.singleProfile?.status == true
                         ? 'Deactivate'
                         : 'Activate',
+                    style: AppStyles.style20.copyWith(
+                      color: AppColors.white,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
               ],
@@ -298,10 +299,9 @@ class _ProfileDetailsPageState extends ConsumerState<ProfileDetailsPage> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Text(
             title,
-            style: const TextStyle(
+            style: AppStyles.style20.copyWith(
+              color: AppColors.primary,
               fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.brown,
             ),
           ),
         ),
@@ -319,7 +319,7 @@ class _ProfileDetailsPageState extends ConsumerState<ProfileDetailsPage> {
             width: 150,
             child: Text(
               label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: AppStyles.text14.copyWith(color: Colors.black87),
             ),
           ),
           Expanded(child: Text(value)),

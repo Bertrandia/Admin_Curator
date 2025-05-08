@@ -1,13 +1,9 @@
-import 'dart:convert';
-
 import 'package:admin_curator/Models/model_tasks.dart';
-import 'package:admin_curator/Models/task_model.dart';
-import 'package:admin_curator/Presentation/About/about.dart';
 import 'package:admin_curator/Presentation/Auth/Login/auth_signin.dart';
-import 'package:admin_curator/Presentation/Dashboard/components/assignPricePopUp..dart';
 import 'package:admin_curator/Presentation/Dashboard/dashboard_screen.dart';
 import 'package:admin_curator/Presentation/LoadingScreen/loading_screen.dart';
 import 'package:admin_curator/Presentation/MainLayout/main_layout.dart';
+import 'package:admin_curator/Presentation/Payment_Pending/about.dart';
 import 'package:admin_curator/Presentation/TasksScreen/task_details_assign.dart';
 import 'package:admin_curator/Presentation/TasksScreen/tasks_details_age.dart';
 import 'package:admin_curator/Presentation/TasksScreen/all_curator_verified_profiles.dart';
@@ -75,6 +71,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) {
               final taskId = state.pathParameters['taskId'] ?? '';
               return TaskDetailsScreen(taskId: taskId);
+            },
+          ),
+          GoRoute(
+            path: '/pending_tasks',
+            builder: (context, state) {
+              // final taskId = state.pathParameters['taskId'] ?? '';
+              return PendingDashboard();
             },
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:admin_curator/Presentation/Dashboard/Widgets/custom_SearchableDD
 import 'package:admin_curator/Presentation/Dashboard/Widgets/data_table.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../Constants/app_styles.dart';
 import '../../Providers/providers.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -33,7 +34,7 @@ class DashboardScreen extends ConsumerWidget {
               task.taskAssignedToCurator == selectedCurator;
           return matchesStatus && matchesCurator;
         }).toList();
-    ;
+
     return Scaffold(
       backgroundColor: AppColors.white,
       body: ListView(
@@ -42,12 +43,12 @@ class DashboardScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Task Dashboard',
-                style: TextStyle(
-                  fontSize: 22,
+                style: AppStyles.style20.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFBF4D28),
+                  color: AppColors.primary,
+                  fontSize: 23,
                 ),
               ),
               ElevatedButton(
@@ -68,7 +69,11 @@ class DashboardScreen extends ConsumerWidget {
                 ),
                 child: Text(
                   'Tasks CSV',
-                  style: TextStyle(color: AppColors.white),
+                  style: AppStyles.style20.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.white,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ],
@@ -100,7 +105,10 @@ class DashboardScreen extends ConsumerWidget {
                   title: 'Verification Pending',
                   count:
                       taskList.listOfTasks
-                          .where((task) => task.curatorTaskStatus == 'On Hold')
+                          .where(
+                            (task) =>
+                                task.curatorTaskStatus == 'Under Verification',
+                          )
                           .length,
                   icon: Icons.verified_user,
                   color: AppColors.primary,
@@ -115,21 +123,6 @@ class DashboardScreen extends ConsumerWidget {
               ],
             ),
           ),
-
-          // Search Bar
-          // TextField(
-          //   decoration: InputDecoration(
-          //     hintText: 'Search tasks by title, assignee...',
-          //     prefixIcon: const Icon(Icons.search),
-          //     filled: true,
-          //     fillColor: Colors.white,
-          //     border: OutlineInputBorder(
-          //       borderRadius: BorderRadius.circular(12),
-          //       borderSide: BorderSide.none,
-          //     ),
-          //     contentPadding: const EdgeInsets.symmetric(vertical: 0),
-          //   ),
-          // ),
           const SizedBox(height: 25),
 
           // Task Filter Chips
@@ -152,11 +145,10 @@ class DashboardScreen extends ConsumerWidget {
                     selectedColor: const Color(0xFFF2A65A).withOpacity(0.3),
                     checkmarkColor: const Color(0xFFBF4D28),
                     backgroundColor: Colors.white,
-                    labelStyle: TextStyle(
-                      color:
-                          selectedChip == filter
-                              ? const Color(0xFFBF4D28)
-                              : Colors.black87,
+                    labelStyle: AppStyles.style20.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                      fontSize: 12,
                     ),
                     onSelected: (bool isSelected) {
                       if (isSelected) {
@@ -306,19 +298,19 @@ class DashboardScreen extends ConsumerWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[700],
+                  style: AppStyles.style20.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                    fontSize: 13,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   count.toString(),
-                  style: TextStyle(
-                    fontSize: 24,
+                  style: AppStyles.style20.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: color,
+                    color: AppColors.primary,
+                    fontSize: 24,
                   ),
                 ),
               ],
@@ -334,9 +326,10 @@ class DashboardScreen extends ConsumerWidget {
       DataColumn(
         label: Text(
           'Task ID',
-          style: TextStyle(
+          style: AppStyles.style20.copyWith(
             fontWeight: FontWeight.bold,
-            color: const Color(0xFFBF4D28),
+            color: AppColors.primary,
+            fontSize: 14,
           ),
         ),
       ),
@@ -345,9 +338,10 @@ class DashboardScreen extends ConsumerWidget {
           width: 90,
           child: Text(
             'Task Subject',
-            style: TextStyle(
+            style: AppStyles.style20.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFFBF4D28),
+              color: AppColors.primary,
+              fontSize: 14,
             ),
           ),
         ),
@@ -355,9 +349,10 @@ class DashboardScreen extends ConsumerWidget {
       DataColumn(
         label: Text(
           'Patron Name',
-          style: TextStyle(
+          style: AppStyles.style20.copyWith(
             fontWeight: FontWeight.bold,
-            color: const Color(0xFFBF4D28),
+            color: AppColors.primary,
+            fontSize: 14,
           ),
         ),
       ),
@@ -366,9 +361,10 @@ class DashboardScreen extends ConsumerWidget {
           width: 80,
           child: Text(
             'LM Name',
-            style: TextStyle(
+            style: AppStyles.style20.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFFBF4D28),
+              color: AppColors.primary,
+              fontSize: 14,
             ),
           ),
         ),
@@ -378,9 +374,10 @@ class DashboardScreen extends ConsumerWidget {
           width: 80,
           child: Text(
             'Assign Date',
-            style: TextStyle(
+            style: AppStyles.style20.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFFBF4D28),
+              color: AppColors.primary,
+              fontSize: 14,
             ),
           ),
         ),
@@ -390,9 +387,10 @@ class DashboardScreen extends ConsumerWidget {
           width: 80,
           child: Text(
             'Due Date',
-            style: TextStyle(
+            style: AppStyles.style20.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFFBF4D28),
+              color: AppColors.primary,
+              fontSize: 14,
             ),
           ),
         ),
@@ -402,9 +400,10 @@ class DashboardScreen extends ConsumerWidget {
           width: 80,
           child: Text(
             'Status',
-            style: TextStyle(
+            style: AppStyles.style20.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFFBF4D28),
+              color: AppColors.primary,
+              fontSize: 14,
             ),
           ),
         ),
@@ -414,9 +413,10 @@ class DashboardScreen extends ConsumerWidget {
           width: 80,
           child: Text(
             'View Detail',
-            style: TextStyle(
+            style: AppStyles.style20.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color(0xFFBF4D28),
+              color: AppColors.primary,
+              fontSize: 14,
             ),
           ),
         ),

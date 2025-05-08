@@ -4,6 +4,7 @@ import 'package:admin_curator/Presentation/CuratorProfiles/Widgets/profile_detai
 import 'package:admin_curator/Providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../Constants/app_styles.dart';
 
 class CuratorProfiles extends ConsumerStatefulWidget {
   const CuratorProfiles({super.key});
@@ -32,9 +33,13 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Profile Verification',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: AppStyles.style20.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                    fontSize: 24,
+                  ),
                 ),
                 _buildChoiceChips(),
               ],
@@ -93,7 +98,6 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
             //       return _buildProfileCard(profile);
             //     },
             //   ),
-            // ),
             Expanded(
               child:
                   selectedChip == 'Verified'
@@ -116,18 +120,18 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              
                               ChoiceChip(
                                 label: Text(
                                   'Contract Signed',
-                                  style: TextStyle(
+                                  style: AppStyles.style20.copyWith(
                                     color:
                                         selectedChoiceChip == 'Contract Signed'
                                             ? Colors.white
                                             : Colors.black,
                                   ),
                                 ),
-                                selected: selectedChoiceChip == 'Contract Signed',
+                                selected:
+                                    selectedChoiceChip == 'Contract Signed',
                                 selectedColor: Colors.green,
 
                                 onSelected: (bool isSelected) {
@@ -142,7 +146,7 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
                               ChoiceChip(
                                 label: Text(
                                   'Unsigned',
-                                  style: TextStyle(
+                                  style: AppStyles.style20.copyWith(
                                     color:
                                         selectedChoiceChip == 'Unsigned'
                                             ? Colors.white
@@ -236,8 +240,12 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
         ChoiceChip(
           label: Text(
             'Unverified',
-            style: TextStyle(
-              color: selectedChip == 'Unverified' ? Colors.white : Colors.black,
+            style: AppStyles.style20.copyWith(
+              color:
+                  selectedChip == 'Unverified'
+                      ? AppColors.white
+                      : Colors.black87,
+              fontSize: 18,
             ),
           ),
           selected: selectedChip == 'Unverified',
@@ -255,8 +263,10 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
         ChoiceChip(
           label: Text(
             'Verified',
-            style: TextStyle(
-              color: selectedChip == 'Verified' ? Colors.white : Colors.black,
+            style: AppStyles.style20.copyWith(
+              color:
+                  selectedChip == 'Verified' ? AppColors.white : Colors.black87,
+              fontSize: 18,
             ),
           ),
           selected: selectedChip == 'Verified',
@@ -305,9 +315,9 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfiles> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+                style: AppStyles.style20.copyWith(
+                  color: Colors.black87,
+                  fontSize: 18,
                 ),
               ),
               Text(

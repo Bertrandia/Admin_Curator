@@ -25,6 +25,14 @@ class TasksNotifier extends StateNotifier<TaskState> {
     });
   }
 
+  void getPaymentPendingTasks() async {
+    state = state.copyWith(isLoading: true);
+
+    _tasksService.getPaymentPendingTasks().listen((tasks) {
+      state = state.copyWith(isLoading: false, listOfCompletedTasks: tasks);
+    });
+  }
+
   Future<bool> addCommentToTask({
     required String taskId,
     required Comment comment,

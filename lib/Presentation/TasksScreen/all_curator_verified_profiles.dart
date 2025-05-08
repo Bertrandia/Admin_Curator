@@ -1,9 +1,12 @@
 import 'package:admin_curator/Core/Notifiers/profile_notifier.dart';
 import 'package:admin_curator/Providers/providers.dart';
+import 'package:admin_curator/Providers/textproviders.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../Constants/app_colors.dart';
+import '../../Constants/app_styles.dart';
 import '../../Models/profile.dart';
 import '../CuratorProfiles/Widgets/profile_details.dart';
 
@@ -28,6 +31,7 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
   Widget build(BuildContext context) {
     final curatorState = ref.watch(profileProvider);
     final selectedChip = ref.watch(selectedChoicCuratorChipProvider);
+    final searchQuery = ref.watch(curatorSearchQueryProvider);
     //   final selectedChipProvider = ref.watch(selectedCuratorChipProvider);
 
     if (curatorState.verifiedProfiles == null ||
@@ -35,14 +39,18 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
       return const Center(child: CircularProgressIndicator());
     }
     final filteredList =
-        curatorState.verifiedProfiles
-            ?.where(
-              (profile) =>
-                  selectedChip == 'Active'
-                      ? profile.status == true
-                      : profile.status == false,
-            )
-            .toList();
+        curatorState.verifiedProfiles?.where((profile) {
+          final matchesStatus =
+              selectedChip == 'Active'
+                  ? profile.status == true
+                  : profile.status == false;
+          final matchesSearch =
+              searchQuery.isEmpty ||
+              profile.fullName.toLowerCase().contains(searchQuery) ||
+              (profile.profile?.email.toLowerCase().contains(searchQuery) ??
+                  false);
+          return matchesStatus && matchesSearch;
+        }).toList();
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F0),
       body: Column(
@@ -54,12 +62,12 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
             color: Colors.white,
             child: Row(
               children: [
-                const Text(
+                Text(
                   'Curators',
-                  style: TextStyle(
-                    fontSize: 24,
+                  style: AppStyles.style20.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFFBF4D28),
+                    color: AppColors.primary,
+                    fontSize: 24,
                   ),
                 ),
                 const Spacer(),
@@ -77,6 +85,40 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
               ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 8.0,
+              horizontal: 24.0,
+            ),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Search curators by name or email',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.primary),
+
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.primary),
+
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: AppColors.primary),
+
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  vertical: 0,
+                  horizontal: 16,
+                ),
+              ),
+              onChanged: (value) {
+                ref.read(curatorSearchQueryProvider.notifier).state = value;
+              },
+            ),
+          ),
           Wrap(
             spacing: 8,
             children:
@@ -87,11 +129,13 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
                     selectedColor: const Color(0xFFF2A65A).withOpacity(0.3),
                     checkmarkColor: const Color(0xFFBF4D28),
                     backgroundColor: Colors.white,
-                    labelStyle: TextStyle(
+                    labelStyle: AppStyles.style20.copyWith(
+                      fontWeight: FontWeight.bold,
                       color:
                           selectedChip == filter
-                              ? const Color(0xFFBF4D28)
+                              ? AppColors.primary
                               : Colors.black87,
+                      fontSize: 17,
                     ),
                     onSelected: (bool isSelected) {
                       if (isSelected) {
@@ -130,9 +174,11 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
                           location: curatorProfile.profile?.state ?? 'NA',
                           rate: '\$1200 per session',
                           availability:
-                              DateFormat(
-                                'dd/MM/yy',
-                              ).format(curatorProfile.createdAt).toString(),
+                              DateFormat('dd/MM/yy')
+                                  .format(
+                                    curatorProfile.createdAt ?? DateTime.now(),
+                                  )
+                                  .toString(),
                           context: context,
                         );
                       },
@@ -199,18 +245,19 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
                       children: [
                         Text(
                           name,
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: AppStyles.style20.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFBF4D28),
+                            color: AppColors.primary,
+                            fontSize: 17,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           title,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
+                          style: AppStyles.style20.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            fontSize: 16,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -224,9 +271,10 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
                             const SizedBox(width: 4),
                             Text(
                               '$email',
-                              style: const TextStyle(
+                              style: AppStyles.style20.copyWith(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                color: Colors.black45,
+                                fontSize: 16,
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -336,7 +384,14 @@ class _CuratorProfilesState extends ConsumerState<CuratorProfilesList> {
                         vertical: 12,
                       ),
                     ),
-                    child: const Text('View Profile'),
+                    child: Text(
+                      'View Profile',
+                      style: AppStyles.style20.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.white,
+                        fontSize: 21,
+                      ),
+                    ),
                   ),
                 ],
               ),

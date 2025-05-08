@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../Providers/providers.dart';
+import '../../../Constants/app_styles.dart';
 import '../../Widgets/asssign_pric_component.dart';
 
 class TaskDataSource extends DataTableSource {
@@ -25,7 +25,14 @@ class TaskDataSource extends DataTableSource {
         DataCell(
           Container(
             width: 150,
-            child: Text(task.taskID, style: TextStyle(fontSize: 12)),
+            child: Text(
+              task.taskID,
+              style: AppStyles.style20.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+                fontSize: 12,
+              ),
+            ),
           ),
         ),
 
@@ -40,26 +47,50 @@ class TaskDataSource extends DataTableSource {
             // ),
             child: Text(
               task.taskSubject,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              style: AppStyles.style20.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+                fontSize: 11,
+              ),
             ),
           ),
         ),
 
         // 🔹 Assigned To
-        DataCell(Text(task.patronName, style: TextStyle(fontSize: 12))),
+        DataCell(
+          Text(
+            task.patronName,
+            style: AppStyles.style20.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+              fontSize: 12,
+            ),
+          ),
+        ),
 
         // 🔹 Due Date
         DataCell(
           Container(
             width: 100,
-            child: Text(task.assignedLMName, style: TextStyle(fontSize: 12)),
+            child: Text(
+              task.assignedLMName,
+              style: AppStyles.style20.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+                fontSize: 12,
+              ),
+            ),
           ),
         ),
         DataCell(
           Container(
             width: 60,
             child: Text(
-              style: TextStyle(fontSize: 12),
+              style: AppStyles.style20.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+                fontSize: 12,
+              ),
               DateFormat('dd/MM/yy').format(task.taskAssignDate.toDate()),
             ),
           ),
@@ -69,16 +100,21 @@ class TaskDataSource extends DataTableSource {
           Container(
             width: 60,
             child: Text(
-              style: TextStyle(fontSize: 12),
+              style: AppStyles.style20.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+                fontSize: 12,
+              ),
               DateFormat('dd/MM/yy').format(task.taskDueDate.toDate()),
             ),
           ),
         ),
         DataCell(
           Text(
-            style: TextStyle(
-              fontSize: 12,
+            style: AppStyles.style20.copyWith(
+              fontWeight: FontWeight.bold,
               color: _getStatusColor(task.curatorTaskStatus),
+              fontSize: 12,
             ),
             task.curatorTaskStatus,
           ),
@@ -102,7 +138,7 @@ class TaskDataSource extends DataTableSource {
                     children: [
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
+                          backgroundColor: AppColors.primary,
                           foregroundColor: AppColors.primary,
                         ),
                         onPressed: () {
@@ -126,7 +162,14 @@ class TaskDataSource extends DataTableSource {
                             task.taskDurationByAdmin,
                           );
                         },
-                        child: Text('Assign Price'),
+                        child: Text(
+                          'Assign Price',
+                          style: AppStyles.style20.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.white,
+                            fontSize: 18,
+                          ),
+                        ),
                       ),
                       PopupMenuButton<String>(
                         icon: Icon(Icons.more_vert),
@@ -155,7 +198,7 @@ class TaskDataSource extends DataTableSource {
                   )
                   : ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary.withOpacity(.8),
+                      backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.primary,
                     ),
                     onPressed: () {
@@ -165,7 +208,11 @@ class TaskDataSource extends DataTableSource {
                     },
                     child: Text(
                       'View Detail',
-                      style: TextStyle(color: AppColors.primary),
+                      style: AppStyles.style20.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.white,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
             ],
