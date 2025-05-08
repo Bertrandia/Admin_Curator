@@ -79,7 +79,7 @@ class AppStyles {
   static const TextStyle text14 = TextStyle(
     fontFamily: 'Begum',
     fontSize: 16,
-    color: AppColors.black,
+    color: Colors.black87,
     fontWeight: FontWeight.normal,
   );
 }

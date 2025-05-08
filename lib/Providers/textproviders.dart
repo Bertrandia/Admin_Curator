@@ -54,3 +54,4 @@ final accountNumber = StateProvider((ref) => TextEditingController());
 final branchName = StateProvider((ref) => TextEditingController());
 final ifscCode = StateProvider((ref) => TextEditingController());
 final aboutUrSelf = StateProvider((ref) => TextEditingController());
+final curatorSearchQueryProvider = StateProvider<String>((ref) => '');

@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../Constants/app_styles.dart';
+
 class MainLayout extends ConsumerWidget {
   final Widget child;
   final String currentRoute;
@@ -80,9 +82,10 @@ class MainLayout extends ConsumerWidget {
                       const SizedBox(height: 12),
                       Text(
                         authState.user?.displayName ?? "Full Name",
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: AppStyles.style20.copyWith(
                           fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 22,
                         ),
                       ),
                     ],
@@ -113,6 +116,13 @@ class MainLayout extends ConsumerWidget {
                         label: "Curators",
                         route: '/tasks',
                         icon: Icons.analytics,
+                        authNotifier: authNotifier,
+                      ),
+                      _buildNavItem(
+                        context,
+                        label: "Pending Payments",
+                        route: '/pending_tasks',
+                        icon: Icons.currency_rupee,
                         authNotifier: authNotifier,
                       ),
                       // _buildNavItem(
@@ -165,7 +175,11 @@ class MainLayout extends ConsumerWidget {
               const SizedBox(width: 16),
               Text(
                 label,
-                style: TextStyle(fontSize: 16, color: Colors.grey.shade800),
+                style: AppStyles.style20.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.grey,
+                  fontSize: 18,
+                ),
               ),
             ],
           ),
@@ -194,11 +208,10 @@ class MainLayout extends ConsumerWidget {
             const SizedBox(width: 16),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 16,
+              style: AppStyles.style20.copyWith(
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color:
-                    isSelected ? Colors.orange.shade900 : Colors.grey.shade800,
+                color: isSelected ? AppColors.primary : Colors.black87,
+                fontSize: 18,
               ),
             ),
           ],

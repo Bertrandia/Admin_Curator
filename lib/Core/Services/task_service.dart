@@ -21,6 +21,31 @@ class TasksService {
         });
   }
 
+  Stream<List<TaskModel>> getPaymentPendingTasks() {
+    return _firestore
+        .collection(FirebaseCollections.createTaskCollection)
+        .where('curatorTaskStatus', isEqualTo: 'Completed')
+        .orderBy('taskAssignDate', descending: true)
+        .snapshots()
+        .map((querySnapshot) {
+          return querySnapshot.docs
+              .map((doc) {
+                final data = doc.data();
+
+                // If field is missing, assume it as false
+                final paymentDueCleared = data['paymentDueCleared'] ?? false;
+
+                if (paymentDueCleared == false) {
+                  return TaskModel.fromFirestore(doc);
+                } else {
+                  return null; // skip if paymentDueCleared is true
+                }
+              })
+              .whereType<TaskModel>()
+              .toList();
+        });
+  }
+
   Stream<List<Comment>> getCommentsStream(String taskId) {
     return _firestore
         .collection(FirebaseCollections.createTaskCollection)

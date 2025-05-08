@@ -3,7 +3,7 @@ class CuratorModel {
   final String fullName;
   final String email;
   final String password;
-  final DateTime createdAt;
+  final DateTime? createdAt;
   final DateTime updatedAt;
   final bool status;
   // final bool isContractSigned;
@@ -40,7 +40,7 @@ class CuratorModel {
       'fullName': fullName,
       'email': email,
       'password': password,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'status': status,
       // 'isContractSigned' : isContractSigned,
@@ -140,8 +140,8 @@ class ProfileData {
   final List<String> selectedSkills;
   final String travelPreference;
   final String dateOfAvailability;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final String aboutSelf;
   final bool isContractSigned;
   final String curatorAgreementUrl;
@@ -174,8 +174,8 @@ class ProfileData {
     required this.travelPreference,
     required this.dateOfAvailability,
     required this.imagesWithTitle,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
     required this.isContractSigned,
     required this.curatorAgreementUrl,
     this.bankAccountDetails,
@@ -207,8 +207,8 @@ class ProfileData {
       'departmentInterested': departmentInterested,
       'selectedSkills': selectedSkills,
       'dateOfAvailability': dateOfAvailability,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
       'aboutUrSelf': aboutSelf,
       'isContractSigned': isContractSigned,
       'bankAccountDetails': bankAccountDetails?.toMap(),
@@ -257,8 +257,12 @@ class ProfileData {
       selectedSkills: List<String>.from(map['selectedSkills'] ?? []),
       travelPreference: map['travelPreference'] ?? "",
       dateOfAvailability: map['dateOfAvailability'] ?? '',
-      createdAt: DateTime.parse(map['createdAt'] as String),
-      updatedAt: DateTime.parse(map['updatedAt'] as String),
+      createdAt:
+          map['createdAt'] != null ? DateTime.parse(map['createdAt']) : null,
+      updatedAt:
+          map['updatedAt'] != null
+              ? DateTime.parse(map['updatedAt'] as String)
+              : null,
       aboutSelf: map['aboutUrSelf'],
       isContractSigned: map['isContractSigned'] ?? false,
       curatorAgreementUrl: map['curatorAgreementUrl'] ?? '',

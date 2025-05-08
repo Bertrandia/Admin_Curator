@@ -68,6 +68,7 @@ class CreateBill {
               pw.Text("To: $soldTo", style: pw.TextStyle(font: _font)),
               pw.SizedBox(height: 20),
               pw.Table(
+                columnWidths: {1: pw.FixedColumnWidth(230)},
                 border: pw.TableBorder.all(width: 1),
                 children: [
                   pw.TableRow(

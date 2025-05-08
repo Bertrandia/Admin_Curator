@@ -4,6 +4,8 @@ import 'package:admin_curator/Providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../Constants/app_styles.dart';
+
 class SearchableDropdown extends ConsumerStatefulWidget {
   @override
   _SearchableDropdownState createState() => _SearchableDropdownState();
@@ -117,6 +119,10 @@ class _SearchableDropdownState extends ConsumerState<SearchableDropdown> {
                       .firstWhere((p) => p.id == selectedCurator)
                       .fullName
                   : 'Select Curator',
+              style: AppStyles.style20.copyWith(
+                color: Colors.black87,
+                fontSize: 18,
+              ),
             ),
           ),
         ),

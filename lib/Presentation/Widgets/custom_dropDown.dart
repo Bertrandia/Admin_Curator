@@ -96,9 +96,8 @@ class _CustomDropdownState extends ConsumerState<CustomDropdown> {
                   children: [
                     Text(
                       widget.header,
-                      style: AppStyles.subHeadingMobile.copyWith(
-                        color: AppColors.orange,
-                        fontWeight: FontWeight.w400,
+                      style: AppStyles.text14.copyWith(
+                        color: AppColors.primary,
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -278,9 +277,13 @@ class _CustomDropdownState extends ConsumerState<CustomDropdown> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 "Assign",
-                style: TextStyle(color: AppColors.secondary),
+                style: AppStyles.style20.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.white,
+                  fontSize: 18,
+                ),
               ),
             ),
           ),
